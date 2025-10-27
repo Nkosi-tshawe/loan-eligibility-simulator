@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "nY59fsUNazpoBrCi/8UHbBmL6dVwnUDPHxMSGq6c4xY=",
+  "Source": "LoanEligibilityAPI",
+  "BasePath": "_content/LoanEligibilityAPI",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
