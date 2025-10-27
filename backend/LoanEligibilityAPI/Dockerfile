@@ -7,7 +7,7 @@ EXPOSE 5203
 
 # Use the official .NET 8 SDK image for building
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Development
+ARG BUILD_CONFIGURATION=Production
 WORKDIR /src
 
 # Copy the project file and restore dependencies
@@ -22,7 +22,7 @@ RUN dotnet build "LoanEligibilityAPI.csproj" -c $BUILD_CONFIGURATION -o /app/bui
 
 # Publish the application
 FROM build AS publish
-ARG BUILD_CONFIGURATION=Development
+ARG BUILD_CONFIGURATION=Production
 RUN dotnet publish "LoanEligibilityAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Create the final runtime image

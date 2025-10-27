@@ -20,13 +20,13 @@ services:
   backend-api:
     build:
       context: ./backend/LoanEligibilityAPI
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     depends_on:
       - postgres
     container_name: backend-api
       # - redis
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       - ASPNETCORE_HTTP_PORTS=5203
       # - ASPNETCORE_HTTPS_PORTS=5003
@@ -40,11 +40,21 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+    develop:
+      watch:
+       - action: sync
+         path: ./frontend
+         target: /app
+         ignore:
+           - node_modules/
+       - action: rebuild
+         path: package.json
+
     depends_on:
       - backend-api
 
