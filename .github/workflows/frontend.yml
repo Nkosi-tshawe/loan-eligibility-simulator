@@ -24,26 +24,8 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
-        
-    # - name: Cache dependencies
-    #   uses: actions/cache@v3
-    #   with:
-    #     path: |
-    #       ~/.npm
-    #       node_modules
-    #       key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          
-    # - name: Ensure cache paths exist
-    #   run: mkdir -p ~/.npm node_modules
-
-    - name: Install dependencies
-      working-directory: ./frontend
-      run: npm ci
-
-    - name: Set npm cache directory
-      run: npm config set cache "$(npm config get cache)" --global
+        # cache: 'npm'
+        # # cache-dependency-path: frontend/package-lock.json
 
     - name: Install dependencies
       working-directory: ./frontend
