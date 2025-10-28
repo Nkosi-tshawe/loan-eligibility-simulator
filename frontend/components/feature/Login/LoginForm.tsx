@@ -38,7 +38,7 @@ export default function LoginForm({
     // console.log(JSON.stringify(data, null, 2));
     toast("Login successful", {
       description: (
-        <pre className="bg-code text-code-foreground mt-2 w-[320px] overflow-x-auto rounded-md p-4">
+        <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">
           <code>{JSON.stringify(data, null, 2)}</code>
         </pre>
       ),
@@ -53,7 +53,8 @@ export default function LoginForm({
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className="w-full max-w-sm">
+      <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
@@ -76,9 +77,10 @@ export default function LoginForm({
                       type="email"
                       placeholder="m@example.com"
                       aria-invalid={fieldState.invalid}
+                      className="bg-slate-100 "
                      
                     />
-                    {fieldState.invalid || fieldState.isTouched && (
+                    {fieldState.invalid  && (
                       <FieldError>{fieldState.error?.message}</FieldError>
                     )}
                   </Field>
@@ -92,7 +94,7 @@ export default function LoginForm({
                   id="password"
                   type="password"
                   aria-invalid={fieldState.invalid}
-               
+                  className="bg-slate-100 "
                 />
                 {fieldState.invalid && (
                   <FieldError>{fieldState.error?.message}</FieldError>
@@ -102,13 +104,14 @@ export default function LoginForm({
               <Field>
                 <Button type="submit" form="login-form" className="font-bold">Login</Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don&apos;t have an account? <a href="/register" className="text-primary hover:text-primary/80 font-bold no-underline!">Sign up</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>
           </form>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }
