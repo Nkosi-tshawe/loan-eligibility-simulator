@@ -100,7 +100,7 @@ export default function LoginForm({
               </Field>
             )} />
               <Field>
-                <Button type="submit" form="login-form">Login</Button>
+                <Button type="submit" form="login-form" className="font-bold">Login</Button>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <a href="#">Sign up</a>
                 </FieldDescription>
