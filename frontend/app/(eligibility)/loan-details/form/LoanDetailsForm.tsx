@@ -20,6 +20,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { loanDetailsFormSchema } from "./formSchema";
+import { useRouter } from "next/navigation";
 
 export default function LoanDetailsForm() {
   const form = useForm<z.infer<typeof loanDetailsFormSchema>>({
@@ -37,10 +38,13 @@ export default function LoanDetailsForm() {
     defaultValue: 12,
   });
 
+  const router = useRouter();
+
   const loanTermYears = loanTermMonths ? Math.floor(loanTermMonths / 12) : 0;
   const loanTermRemainingMonths = loanTermMonths ? loanTermMonths % 12 : 0;
 
   function onSubmit(data: z.infer<typeof loanDetailsFormSchema>) {
+    router.push("/eligibility-results");
     toast("Loan details saved", {
       description: (
         <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">

@@ -77,6 +77,8 @@
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.708 0 0);
   --spacing: 0.29rem;
+  --success:#28A745;
+  
 }
 
 .dark {
