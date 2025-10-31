@@ -1,7 +1,8 @@
 "use client"
 import { Progress } from "@/components/ui/progress";
-import React from "react";
-import { any, unknown } from "zod";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 
 export const NavigationContext = React.createContext({navigation: {currentPageTitle: "", currentPageDescription: "", progress:5}, setNavigation: (navigation: {currentPageTitle: string, currentPageDescription: string, progress: number}) => {}});
 
@@ -12,9 +13,24 @@ export default function EligibilityLayout({
 }) {
 
    
-
-   
 const [navigation, setNavigation] = React.useState<{currentPageTitle: string, currentPageDescription: string, progress: number}>({currentPageTitle: "", currentPageDescription: "", progress: 5}); 
+
+const { isAuthenticated, loading: authLoading } = useAuth();
+const router = useRouter();
+
+useEffect(() => {
+  if (!authLoading && !isAuthenticated) {
+    router.push('/login');
+  }
+}, [isAuthenticated, authLoading, router]);
+
+if (authLoading) {
+  return <div>Authenticating....</div>;
+}
+
+if (!isAuthenticated) {
+  return null;
+}
   
 return (
     <NavigationContext.Provider value={{navigation, setNavigation}}>

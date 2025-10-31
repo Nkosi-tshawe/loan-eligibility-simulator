@@ -1,8 +1,11 @@
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
+"use client";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
+
   return (
     <div className="flex justify-center font-sans dark:bg-black">
      
@@ -17,7 +20,6 @@ export default function Home() {
          <span className="truncate">Get Started</span>
         </Link>
         </div>
-       
     </div>
   );
 }
