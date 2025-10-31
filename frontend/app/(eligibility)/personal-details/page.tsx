@@ -1,7 +1,17 @@
+"use client";
+import { useContext } from "react";
 import PersonalDetailsForm from "./form/PersonDetailsForm";
 import { LockIcon } from "lucide-react";
+import { NavigationContext } from "../layout";
+import React from "react";
 
 export default function PersonalDetailsPage() {
+    const { setNavigation } = useContext(NavigationContext);
+
+    React.useEffect(() => {
+        setNavigation({currentPageTitle: "Personal Details", currentPageDescription: "Complete all steps to unlock your loan eligibility!", progress: 25});
+    }, [setNavigation]);
+
     return (
         <>
             <div className="flex items-center justify-between mb-4"> 
@@ -18,3 +28,4 @@ export default function PersonalDetailsPage() {
         </>
     );
 }
+
