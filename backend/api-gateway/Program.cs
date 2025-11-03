@@ -80,6 +80,6 @@ app.MapReverseProxy();
 // Health check
 app.MapGet("/health", () => new { status = "ok", service = "api-gateway", timestamp = DateTime.UtcNow });
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-app.Run($"http://localhost:{port}");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5001";
+app.Run($"http://0.0.0.0:{port}");
 

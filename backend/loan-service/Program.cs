@@ -14,10 +14,10 @@ builder.Services.AddSwaggerGen();
 
 // Configure database connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? "Data Source=loans.db";
+    ?? "Host=localhost;Port=5432;Database=loaneligibility;Username=postgres;Password=postgres";
 
 builder.Services.AddDbContext<LoanEligibilityDbContext>(options =>
-    options.UseSqlite(connectionString));
+    options.UseNpgsql(connectionString));
 
 // Register services with dependency injection
 builder.Services.AddScoped<LoanProductService>();
@@ -98,6 +98,6 @@ app.MapControllers();
 // Health check endpoint
 app.MapGet("/health", () => new { status = "ok", timestamp = DateTime.UtcNow.ToString("O") });
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5001";
-app.Run($"http://localhost:{port}");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5003";
+app.Run($"http://0.0.0.0:{port}");
 

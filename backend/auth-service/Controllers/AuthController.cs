@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using AuthService.API.Models;
-using AuthService.API.Services;
+using AuthServiceClass = AuthService.API.Services.AuthService;
 
 namespace AuthService.API.Controllers;
 
@@ -8,10 +8,10 @@ namespace AuthService.API.Controllers;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly AuthService _authService;
+    private readonly AuthServiceClass _authService;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(AuthService authService, ILogger<AuthController> logger)
+    public AuthController(AuthServiceClass authService, ILogger<AuthController> logger)
     {
         _authService = authService;
         _logger = logger;

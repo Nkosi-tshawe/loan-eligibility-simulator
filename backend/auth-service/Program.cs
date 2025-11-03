@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using AuthService.API.Data;
-using AuthService.API.Services;
+using AuthServiceClass = AuthService.API.Services.AuthService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,10 +14,10 @@ builder.Services.AddSwaggerGen();
 
 // Configure database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Data Source=auth.db";
+    ?? "Host=localhost;Port=5432;Database=authdb;Username=postgres;Password=postgres";
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseSqlite(connectionString));
+    options.UseNpgsql(connectionString));
 
 // Configure JWT Authentication
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "YourSuperSecretKeyThatShouldBeAtLeast32CharactersLong!";
@@ -47,7 +47,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // Register services
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AuthServiceClass>();
 
 // CORS
 builder.Services.AddCors(options =>
@@ -82,5 +82,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5002";
-app.Run($"http://localhost:{port}");
+app.Run($"http://0.0.0.0:{port}");
 
