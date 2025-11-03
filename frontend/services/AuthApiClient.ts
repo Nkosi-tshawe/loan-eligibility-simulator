@@ -2,7 +2,7 @@ import { RegisterRequest, LoginRequest, RefreshTokenRequest } from "@/models/req
 import { AuthResponse } from "@/models/responses/AuthResponse";
 
 export class AuthApiClient {
-    private baseUrl = 'http://localhost:5000/api/auth'; // API Gateway
+    private baseUrl = process.env.NEXT_PUBLIC_API_URL ; // API Gateway
   
     async register(request: RegisterRequest): Promise<AuthResponse> {
       const response = await fetch(`${this.baseUrl}/register`, {
@@ -22,7 +22,7 @@ export class AuthApiClient {
     }
   
     async login(request: LoginRequest): Promise<AuthResponse> {
-      const response = await fetch(`${this.baseUrl}/login`, {
+      const response = await fetch(`${this.baseUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
