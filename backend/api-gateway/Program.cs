@@ -1,31 +1,16 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using LoanEligibility.API.Services;
-using LoanEligibility.API.Data;
+using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configure database connection
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? "Host=localhost;Port=5432;Database=loaneligibility;Username=postgres;Password=postgres";
-
-builder.Services.AddDbContext<LoanEligibilityDbContext>(options =>
-    options.UseNpgsql(connectionString));
-
-// Register services with dependency injection
-builder.Services.AddScoped<LoanProductService>();
-builder.Services.AddScoped<LoanEligibilityService>();
-builder.Services.AddScoped<RateCalculationService>();
-builder.Services.AddScoped<AffordabilityService>();
-
-// Configure JWT Authentication
+// Configure JWT for token validation
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "YourSuperSecretKeyThatShouldBeAtLeast32CharactersLong!";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "LoanEligibilitySystem";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "LoanEligibilityClient";
@@ -52,7 +37,21 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Configure CORS
+// Configure YARP Reverse Proxy
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddTransforms(builderContext => { });
+
+// Add authorization policy for loan routes
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAuthentication", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+    });
+});
+
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -65,24 +64,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Ensure database is created and seeded
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        var context = services.GetRequiredService<LoanEligibilityDbContext>();
-        context.Database.EnsureCreated();
-        await DatabaseSeeder.SeedAsync(context);
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
-    }
-}
-
-// Configure the HTTP request pipeline
+// Configure pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -92,12 +74,12 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
+app.MapReverseProxy();
 
-// Health check endpoint
-app.MapGet("/health", () => new { status = "ok", timestamp = DateTime.UtcNow.ToString("O") });
+// Health check
+app.MapGet("/health", () => new { status = "ok", service = "api-gateway", timestamp = DateTime.UtcNow });
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5003";
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5001";
 app.Run($"http://0.0.0.0:{port}");
 
