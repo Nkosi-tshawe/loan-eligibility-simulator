@@ -38,14 +38,14 @@ return (
             {navigation.currentPageDescription}
           </p>
         </div>
-        <div className="w-full max-w-sm">
-        <Progress value={navigation.progress} className="w-full block md:hidden" />
+        <div className="w-full">
+        <Progress value={navigation.progress} className="w-full block xl:hidden" />
       
-          <p className="text-sm text-gray-500 text-center mt-2">
+          <p className="text-sm text-gray-500 text-center mt-2 xl:hidden">
             {navigation.progress}% Complete - You&apos;re doing great!
           </p>
         </div>
-        <div className="w-full bg-gray-100 rounded-lg p-4 flex-1 flex items-center justify-center">
+        <div className="w-full bg-gray-100 rounded-lg p-4 flex-1 flex items-center justify-center hidden xl:flex">
         <RadialProgress value={navigation.progress} valueColorClass="text-primary" label={`Complete`}  progressColor="success"/>
         </div>
       </div>
