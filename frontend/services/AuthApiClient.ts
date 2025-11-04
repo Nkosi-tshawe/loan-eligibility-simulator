@@ -1,11 +1,11 @@
-import { RegisterRequest, LoginRequest, RefreshTokenRequest } from "@/models/requests";
+import { RegisterRequest, LoginRequest } from "@/models/requests";
 import { AuthResponse } from "@/models/responses/AuthResponse";
 
 export class AuthApiClient {
     private baseUrl = process.env.NEXT_PUBLIC_API_URL ; // API Gateway
   
     async register(request: RegisterRequest): Promise<AuthResponse> {
-      const response = await fetch(`${this.baseUrl}/register`, {
+      const response = await fetch(`${this.baseUrl}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

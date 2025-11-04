@@ -52,7 +52,7 @@ export default function Header() {
                             <DropdownMenu>
                             <DropdownMenuTrigger>
                             <Avatar>
-                                <AvatarFallback>{user?.username.charAt(0)}</AvatarFallback>
+                                <AvatarFallback>{user?.firstName?.charAt(0)}</AvatarFallback>
                             </Avatar>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>

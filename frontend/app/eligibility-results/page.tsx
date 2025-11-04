@@ -1,3 +1,4 @@
+import RadialProgress from "@/components/RadialProgress";
 import { BriefcaseIcon, CheckCircleIcon, ChevronDownIcon, DownloadIcon, UserCheckIcon, WalletIcon } from "lucide-react";
 
 export default function EligibilityResultsPage() {
@@ -10,7 +11,7 @@ export default function EligibilityResultsPage() {
                 <div className="flex flex-1 flex-col items-start justify-between gap-4 rounded-xl border border-[var(--success)] bg-[var(--success)]/10  p-5 @[480px]:flex-row @[480px]:items-center">
                     <div className="flex items-center gap-4">
                         <div className="bg-success text-white rounded-full p-2">
-                            <CheckCircleIcon className="w-6 h-6" />
+                            <CheckCircleIcon className="w-6 h-6 text-[var(--success)]" />
                         </div>
                         <div className="flex flex-col gap-1">
                             <p className="text-[var(--success)]  text-lg font-bold leading-tight">Congratulations, you are approved!</p>
@@ -22,7 +23,7 @@ export default function EligibilityResultsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
                 <div className="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-slate-200 dark:border-slate-800 bg-white ">
                     <p className="text-slate-600 flex-1 dark:text-slate-400 text-sm font-medium leading-normal">Estimated Monthly Payment</p>
-                    <p className="text-primary dark:text-slate-50 tracking-light text-3xl font-bold leading-tight">$1,250</p>
+                    <p className="text-primary dark:text-slate-50 tracking-light text-3xl font-bold leading-tight">R1,250</p>
                 </div>
                 <div className="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-slate-200 dark:border-slate-800 bg-white ">
                     <p className="text-slate-600 dark:text-slate-400 text-sm font-medium leading-normal">Debt-to-Income (DTI) Ratio</p>
@@ -30,11 +31,11 @@ export default function EligibilityResultsPage() {
                 </div>
                 <div className="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-slate-200 dark:border-slate-800 bg-white">
                     <p className="text-slate-600 flex-1 dark:text-slate-400 text-sm font-medium leading-normal">Available Income</p>
-                    <p className="text-primary dark:text-slate-50 tracking-light text-3xl font-bold leading-tight">$4,500</p>
+                    <p className="text-primary dark:text-slate-50 tracking-light text-3xl font-bold leading-tight">R4,500</p>
                 </div>
                 <div className="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border border-slate-200 dark:border-slate-800 bg-white">
                     <p className="text-slate-600 flex-1 dark:text-slate-400 text-sm font-medium leading-normal">Safety Margin</p>
-                    <p className="text-primary dark:text-slate-50 tracking-light text-3xl font-bold leading-tight">$800</p>
+                    <p className="text-primary dark:text-slate-50 tracking-light text-3xl font-bold leading-tight">R800</p>
                 </div>
             </div>
 
@@ -98,16 +99,7 @@ export default function EligibilityResultsPage() {
                 <div className="flex flex-col gap-4">
                     <h2 className="text-[#0d141b] dark:text-slate-50 text-[22px] font-bold leading-tight tracking-[-0.015em] pb-0 pt-5">Risk Assessment</h2>
                     <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark p-6 flex flex-col items-center justify-center gap-4">
-                        <div className="relative size-40">
-                            <svg className="size-full" height="36" viewBox="0 0 36 36" width="36" xmlns="http://www.w3.org/2000/svg">
-                                <circle className="stroke-current text-slate-200 dark:text-slate-700" cx="18" cy="18" fill="none" r="16" stroke-width="3"></circle>
-                                <circle className="stroke-current text-[var(--success)]" cx="18" cy="18" fill="none" r="16" stroke-dasharray="100" stroke-dashoffset="65" stroke-linecap="round" stroke-width="3" transform="rotate(-90 18 18)"></circle>
-                            </svg>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                <span className="text-3xl font-bold text-primary dark:text-slate-50">35%</span>
-                                <span className="text-sm text-slate-500 dark:text-slate-400">DTI Ratio</span>
-                            </div>
-                        </div>
+                           <RadialProgress value={35} valueColorClass="text-primary" label={`DIT Ratio`}  progressColor="success"/>
                         <span className="inline-flex items-center rounded-full bg-success/10 px-3 py-1 text-sm font-medium text-success dark:bg-success/20 dark:text-success-300">Low Risk</span>
                         <p className="text-center text-sm text-slate-600 dark:text-slate-400">Your financial profile is strong, placing you in the lowest risk category.</p>
                     </div>
