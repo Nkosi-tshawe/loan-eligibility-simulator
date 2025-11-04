@@ -14,13 +14,13 @@ export default function LoginPage() {
         }
     }, [isAuthenticated, authLoading, router]);
 
-    if (authLoading) {
-        return <div>Loading...</div>;
-    }
+    // if (authLoading) {
+    //     return <div>Loading...</div>;
+    // }
 
-    if (isAuthenticated) {
-        return <div>Redirecting...</div>;
-    }
+    // if (isAuthenticated) {
+    //     return <div>Redirecting...</div>;
+    // }
 
     return (
         <>

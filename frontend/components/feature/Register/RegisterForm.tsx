@@ -21,6 +21,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { registerFormSchema } from "./formSchema";
+import { useAuth } from "@/context/AuthContext";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function RegisterForm({
   className,
@@ -33,25 +35,28 @@ export default function RegisterForm({
       lastName: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
+  const {register,loading} = useAuth();
 
-  function onSubmit(data: z.infer<typeof registerFormSchema>) {
-    // console.log(JSON.stringify(data, null, 2));
-    toast("Login successful", {
-      description: (
-        <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as React.CSSProperties,
-    });
+const  onSubmit = async (data: z.infer<typeof registerFormSchema>,  e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if(data.email && data.password && data.firstName && data.lastName){
+      try{
+        await register(data.email, data.email, data.password, data.firstName, data.lastName);
+      } catch (error: unknown) {
+        let errorMessage = 'Registration failed';
+        if (error instanceof Error) {
+          errorMessage = error.message;
+          if (errorMessage === 'Username or email already exists') {
+            form.setError("email", { type: "manual", message: "Email already exists" });
+          }
+        }
+        toast.error(errorMessage);
+      }
+    }
+  
   }
 
   return (
@@ -65,7 +70,7 @@ export default function RegisterForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form id="login-form" onSubmit={form.handleSubmit(onSubmit)}>
+          <form id="login-form" onSubmit={(e) => form.handleSubmit((data)=> onSubmit(data,e))(e)}>
             <FieldGroup>
               <div className="flex  gap-2">
               <Controller name="firstName" control={form.control} render={({ field, fieldState }) => (
@@ -156,7 +161,7 @@ export default function RegisterForm({
             )} />
             </div>
               <Field>
-                <Button type="submit" form="login-form" className="font-bold">Register me</Button>
+                <Button type="submit" form="login-form" className="font-bold">{loading ? <Spinner /> : "Register me"}</Button>
                 <FieldDescription className="text-center">
                   Already have an account? <a href="/login" className="text-primary hover:text-primary/80 font-bold no-underline!">Login up</a>
                 </FieldDescription>
