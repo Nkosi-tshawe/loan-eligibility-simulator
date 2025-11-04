@@ -1,5 +1,6 @@
 import { RegisterRequest, LoginRequest } from "@/models/requests";
 import { AuthResponse } from "@/models/responses/AuthResponse";
+import { IUser } from "@/models/User";
 
 export class AuthApiClient {
     private baseUrl = process.env.NEXT_PUBLIC_API_URL ; // API Gateway
@@ -60,6 +61,18 @@ export class AuthApiClient {
       localStorage.setItem('accessToken', data.accessToken);
       localStorage.setItem('refreshToken', data.refreshToken);
       return data;
+    }
+
+    async getCurrentUser(): Promise<IUser> {
+      const response = await fetch(`${this.baseUrl}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${this.getAccessToken()}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to get current user');
+      }
+      return response.json();
     }
   
     logout(): void {
