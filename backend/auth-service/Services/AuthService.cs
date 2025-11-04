@@ -227,6 +227,16 @@ public class AuthService
         return token;
     }
 
+    public async Task<UserDto?> GetUserByIdAsync(int userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null || !user.IsActive)
+        {
+            return null;
+        }
+        return MapToDto(user);
+    }
+
     private static UserDto MapToDto(UserEntity user)
     {
         return new UserDto

@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using AuthService.API.Models;
 using AuthServiceClass = AuthService.API.Services.AuthService;
 
@@ -86,6 +88,33 @@ public class AuthController : ControllerBase
         {
             _logger.LogError(ex, "Error during token validation");
             return StatusCode(500, new { error = "An error occurred during token validation" });
+        }
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { error = "Invalid user token" });
+            }
+
+            var user = await _authService.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound(new { error = "User not found" });
+            }
+
+            return Ok(user);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving current user");
+            return StatusCode(500, new { error = "An error occurred while retrieving user details" });
         }
     }
 
