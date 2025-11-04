@@ -1,12 +1,7 @@
+import { IUser } from "@/models/User";
 export interface AuthResponse {
     accessToken: string;
     refreshToken: string;
     expiresAt: string;
-    user: {
-      id: number;
-      username: string;
-      email: string;
-      firstName?: string;
-      lastName?: string;
-    };
+        user: IUser;
   }
