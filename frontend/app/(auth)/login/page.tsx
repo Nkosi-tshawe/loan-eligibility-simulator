@@ -1,5 +1,6 @@
 "use client";
 import LoginForm from "@/components/feature/Login/LoginForm";
+import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -14,13 +15,9 @@ export default function LoginPage() {
         }
     }, [isAuthenticated, authLoading, router]);
 
-    // if (authLoading) {
-    //     return <div>Loading...</div>;
-    // }
-
-    // if (isAuthenticated) {
-    //     return <div>Redirecting...</div>;
-    // }
+    if (authLoading) {
+        return <div className="flex items-center justify-center h-screen"><Spinner /><span>Loading...</span></div>;
+      }
 
     return (
         <>
