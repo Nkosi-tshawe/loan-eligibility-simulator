@@ -32,6 +32,33 @@ public class LoanController : ControllerBase
     {
         try
         {
+            // Validate request
+            if (request == null)
+            {
+                return BadRequest(new { error = "Request body is required" });
+            }
+
+            if (request.PersonalDetails == null)
+            {
+                return BadRequest(new { error = "PersonalDetails is required" });
+            }
+
+            if (request.FinancialDetails == null)
+            {
+                return BadRequest(new { error = "FinancialDetails is required" });
+            }
+
+            if (request.LoanDetails == null)
+            {
+                return BadRequest(new { error = "LoanDetails is required" });
+            }
+
+            // Validate loan purpose
+            if (string.IsNullOrEmpty(request.LoanDetails.Purpose))
+            {
+                return BadRequest(new { error = "Loan purpose is required" });
+            }
+
             var (eligibility, product) = _eligibilityService.CalculateEligibility(request);
 
             RecommendedLoan? recommendedLoan = null;

@@ -30,9 +30,9 @@ export default function PersonalDetailsForm() {
     defaultValues: {
       firstName: personDetails.firstName,
       lastName: personDetails.lastName,
-      age: personDetails.age,
+      age: personDetails.age || 18,
       employmentStatus: personDetails.employmentStatus,
-      yearsInCurrentRole: personDetails.yearsInCurrentRole,
+      yearsInCurrentRole: personDetails.yearsInCurrentRole || 1,
     },
   });
 
@@ -41,20 +41,15 @@ export default function PersonalDetailsForm() {
 
   function onSubmit(data: z.infer<typeof personalDetailsFormSchema>) {
   setPersonDetails({...data} as PersonalDetails);
-    toast("Personal details saved", {
-      description: (
-        <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(personDetails, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius) + 4px)",
-      } as React.CSSProperties,
-    });
+    if(process.env.NEXT_ENV === 'development') { // Only show toast in development environment
+      toast("Personal details saved", {
+        description: (
+          <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">
+            <code>{JSON.stringify(personDetails, null, 2)}</code>
+          </pre>
+        ),
+      });
+    }
     router.push('/financial-details');
 
   }
@@ -114,6 +109,8 @@ export default function PersonalDetailsForm() {
               <Input
                 {...field}
                 id="age"
+                min={18}
+                max={100}
                 type="number"
                 placeholder="Enter your age"
                 aria-invalid={fieldState.invalid}
@@ -151,13 +148,11 @@ export default function PersonalDetailsForm() {
                 >
                   <SelectValue placeholder="Select employment status" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="full-time">Full-time</SelectItem>
-                  <SelectItem value="part-time">Part-time</SelectItem>
+                <SelectContent >
+                  <SelectItem value="employed">Employed</SelectItem>
+                  <SelectItem value="retired">Retired</SelectItem>
                   <SelectItem value="self-employed">Self-employed</SelectItem>
                   <SelectItem value="unemployed">Unemployed</SelectItem>
-                  <SelectItem value="retired">Retired</SelectItem>
-                  <SelectItem value="student">Student</SelectItem>
                 </SelectContent>
               </Select>
               {(fieldState.invalid || fieldState.isTouched) && (
@@ -179,6 +174,8 @@ export default function PersonalDetailsForm() {
                 {...field}
                 id="yearsInCurrentRole"
                 type="number"
+                min={1}
+                max={60}
                 placeholder="Enter duration in years"
                 aria-invalid={fieldState.invalid}
                 className="bg-slate-100"

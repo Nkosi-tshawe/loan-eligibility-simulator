@@ -9,7 +9,7 @@ public class AffordabilityService
         LoanProduct? product,
         decimal monthlyPayment)
     {
-        var monthlyIncome = request.FinancialDetails.AnnualIncome / 12;
+        var monthlyIncome = (request.FinancialDetails.MonthlyIncome * 12) / 12;
         var totalDebt = request.FinancialDetails.ExistingLoans + monthlyPayment;
         var debtToIncomeRatio = totalDebt / monthlyIncome;
         var availableIncome = monthlyIncome - request.FinancialDetails.MonthlyExpenses;

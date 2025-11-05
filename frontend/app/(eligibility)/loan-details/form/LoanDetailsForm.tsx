@@ -22,22 +22,23 @@ import { toast } from "sonner";
 import { loanDetailsFormSchema } from "./formSchema";
 import { useRouter } from "next/navigation";
 import { useEligibility } from "@/context/EligibilityContext";
+import { LoanDetails } from "@/models/LoanDetails";
 
 export default function LoanDetailsForm() {
-  const {loanDetails,setLoanDetails} = useEligibility();
+  const {loanDetails,setLoanDetails,checkEligibility} = useEligibility();
   const form = useForm<z.infer<typeof loanDetailsFormSchema>>({
     resolver: zodResolver(loanDetailsFormSchema),
     defaultValues: {
-      loanAmount: loanDetails.requestedAmount,
-      loanTerm: loanDetails.requestedTermMonths,
-      loanPurpose: loanDetails.purpose,
+      loanAmount: loanDetails.requestedAmount || 1000,
+      loanTerm: loanDetails.requestedTermMonths || 6,
+      loanPurpose: loanDetails.purpose || 'personal',
     },
   });
 
   const loanTermMonths = useWatch({
     control: form.control,
     name: "loanTerm",
-    defaultValue: loanDetails.requestedTermMonths,
+    defaultValue: loanDetails.requestedTermMonths || 6,
   });
 
   const router = useRouter();
@@ -45,9 +46,10 @@ export default function LoanDetailsForm() {
   const loanTermYears = loanTermMonths ? Math.floor(loanTermMonths / 12) : 0;
   const loanTermRemainingMonths = loanTermMonths ? loanTermMonths % 12 : 0;
 
-  function onSubmit(data: z.infer<typeof loanDetailsFormSchema>) {
-    router.push("/eligibility-results");
-    toast("Loan details saved", {
+ const onSubmit = async (data: z.infer<typeof loanDetailsFormSchema>) => {
+    setLoanDetails({...data} as unknown as LoanDetails);
+    if(process.env.NEXT_ENV === 'development') { // Only show toast in development environment
+      toast("Loan details saved", {
       description: (
         <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">
           <code>{JSON.stringify(data, null, 2)}</code>
@@ -61,6 +63,19 @@ export default function LoanDetailsForm() {
         "--border-radius": "calc(var(--radius) + 4px)",
       } as React.CSSProperties,
     });
+    }
+   try {
+    const response = await checkEligibility();
+     toast("Eligibility check completed", {
+      description: (
+        <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">
+          <code>{JSON.stringify(response, null, 2)}</code>
+        </pre>
+      ),
+     });
+   } catch (error) {
+    console.error(error);
+   }
   }
 
   return (

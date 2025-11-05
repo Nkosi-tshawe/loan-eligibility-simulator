@@ -14,6 +14,7 @@ export interface EligibilityContextType {
     setFinancialDetails: (financialDetails: FinancialDetails) => void;
     setLoanDetails: (loanDetails: LoanDetails) => void;
     setEligibilityResult: (eligibilityResult: EligibilityResult) => void;
+    checkEligibility: () => Promise<void>;
 }
 
 export const EligibilityContext = createContext<EligibilityContextType | undefined>(undefined);
@@ -37,7 +38,7 @@ const initialPersonDetails: PersonalDetails = {
     yearsInCurrentRole: 0,
 };
 const initialFinancialDetails: FinancialDetails = {
-    annualIncome: 0,
+    monthlyIncome: 0,
     monthlyExpenses: 0,
     existingLoans: 0,
     creditScore: 0,
@@ -72,6 +73,7 @@ export const EligibilityProvider: React.FC<EligibilityProviderProps> = ({ childr
     const [eligibilityResult, setEligibilityResult] = useState<EligibilityResult>(initialEligibilityResult);
     const [navigation, setNavigation] = useState<{currentPageTitle: string, currentPageDescription: string, progress: number}>({currentPageTitle: "", currentPageDescription: "", progress: 5});
     const loanApiClient = new LoanApiClient();
+
     const checkEligibility = async () => {
         try {
         const response = await loanApiClient.checkEligibility({
@@ -98,7 +100,8 @@ export const EligibilityProvider: React.FC<EligibilityProviderProps> = ({ childr
             setFinancialDetails,
             setLoanDetails,
             setEligibilityResult,
-            setNavigation
+            setNavigation,
+            checkEligibility
         }}>
         {children}
     </EligibilityContext.Provider>;

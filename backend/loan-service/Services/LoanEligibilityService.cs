@@ -88,7 +88,7 @@ public class LoanEligibilityService
         }
 
         // Income risk
-        var incomeRatio = financial.MonthlyExpenses / (financial.AnnualIncome / 12);
+        var incomeRatio = financial.MonthlyExpenses / (financial.MonthlyIncome * 12);
         if (incomeRatio < 0.3m)
         {
             score += 2;
@@ -105,14 +105,20 @@ public class LoanEligibilityService
 
     private decimal CalculateMaxLoanAmount(PersonalDetails personal, FinancialDetails financial, string risk)
     {
-        var baseMultiplier = financial.AnnualIncome * 0.3m; // 30% of annual income
+        var baseMultiplier = (financial.MonthlyIncome * 12) * 0.3m; // 30% of annual income
         var riskMultipliers = new Dictionary<string, decimal>
         {
             { "low", 1.0m },
             { "medium", 0.8m },
             { "high", 0.6m }
         };
-        return Math.Floor(baseMultiplier * riskMultipliers[risk]);
+        
+        if (string.IsNullOrEmpty(risk) || !riskMultipliers.TryGetValue(risk, out var multiplier))
+        {
+            multiplier = 0.6m; // Default to high risk multiplier
+        }
+        
+        return Math.Floor(baseMultiplier * multiplier);
     }
 
     private int RecommendTerm(string purpose, string risk)
@@ -131,7 +137,20 @@ public class LoanEligibilityService
             { "medium", 0.9m },
             { "high", 0.8m }
         };
-        return (int)Math.Floor(baseTerms[purpose] * riskAdjustments[risk]);
+        
+        // Default to personal loan if purpose is not found or empty
+        if (string.IsNullOrEmpty(purpose) || !baseTerms.TryGetValue(purpose, out var baseTerm))
+        {
+            baseTerm = 36; // Default to personal loan term
+        }
+        
+        // Default to high risk adjustment if risk is not found or empty
+        if (string.IsNullOrEmpty(risk) || !riskAdjustments.TryGetValue(risk, out var riskAdjustment))
+        {
+            riskAdjustment = 0.8m; // Default to high risk adjustment
+        }
+        
+        return (int)Math.Floor(baseTerm * riskAdjustment);
     }
 
     private LoanProduct? GetRecommendedProduct(LoanDetails loanDetails)
