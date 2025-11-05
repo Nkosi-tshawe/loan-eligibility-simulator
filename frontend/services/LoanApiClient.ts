@@ -65,7 +65,7 @@ import {
     async checkEligibility(request: EligibilityRequest): Promise<EligibilityResponse> {
       try {
         const headers = await this.getAuthHeaders();
-        const response = await fetch(`${this.baseUrl}/eligibility`, {
+        const response = await fetch(`${this.baseUrl}/loans/eligibility`, {
           method: 'POST',
           headers,
           body: JSON.stringify(request),
@@ -76,7 +76,7 @@ import {
         if (error instanceof Error && error.message === 'TOKEN_REFRESHED') {
           // Retry with new token
           const headers = await this.getAuthHeaders();
-          const response = await fetch(`${this.baseUrl}/eligibility`, {
+          const response = await fetch(`${this.baseUrl}/loans/eligibility`, {
             method: 'POST',
             headers,
             body: JSON.stringify(request),
@@ -90,7 +90,7 @@ import {
     async getProducts(): Promise<LoanProduct[]> {
       try {
         const headers = await this.getAuthHeaders();
-        const response = await fetch(`${this.baseUrl}/products`, {
+        const response = await fetch(`${this.baseUrl}/loans/products`, {
           headers,
         });
   
@@ -99,7 +99,7 @@ import {
       } catch (error: unknown) {
         if (error instanceof Error && error.message === 'TOKEN_REFRESHED') {
           const headers = await this.getAuthHeaders();
-          const response = await fetch(`${this.baseUrl}/products`, {
+          const response = await fetch(`${this.baseUrl}/loans/products`, {
             headers,
           });
           const data = await this.handleResponse<{ products: LoanProduct[] }>(response);
@@ -112,7 +112,7 @@ import {
     async calculateRate(request: CalculateRateRequest): Promise<CalculateRateResponse> {
       try {
         const headers = await this.getAuthHeaders();
-        const response = await fetch(`${this.baseUrl}/calculate-rate`, {
+        const response = await fetch(`${this.baseUrl}/loans/calculate-rate`, {
           method: 'POST',
           headers,
           body: JSON.stringify(request),
@@ -122,7 +122,7 @@ import {
       } catch (error: unknown) {
         if (error instanceof Error && error.message === 'TOKEN_REFRESHED') {
           const headers = await this.getAuthHeaders();
-          const response = await fetch(`${this.baseUrl}/calculate-rate`, {
+          const response = await fetch(`${this.baseUrl}/loans/calculate-rate`, {
             method: 'POST',
             headers,
             body: JSON.stringify(request),
@@ -135,7 +135,7 @@ import {
   
     async getValidationRules(): Promise<ValidationRulesResponse> {
       // This endpoint is public, no auth needed
-      const response = await fetch(`${this.baseUrl}/validation-rules`);
+      const response = await fetch(`${this.baseUrl}/loans/validation-rules`);
   
       if (!response.ok) {
         throw new Error('Failed to fetch validation rules');
