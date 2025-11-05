@@ -21,21 +21,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { loanDetailsFormSchema } from "./formSchema";
 import { useRouter } from "next/navigation";
+import { useEligibility } from "@/context/EligibilityContext";
 
 export default function LoanDetailsForm() {
+  const {loanDetails,setLoanDetails} = useEligibility();
   const form = useForm<z.infer<typeof loanDetailsFormSchema>>({
     resolver: zodResolver(loanDetailsFormSchema),
     defaultValues: {
-      loanAmount: undefined,
-      loanTerm: 12,
-      loanPurpose: "",
+      loanAmount: loanDetails.requestedAmount,
+      loanTerm: loanDetails.requestedTermMonths,
+      loanPurpose: loanDetails.purpose,
     },
   });
 
   const loanTermMonths = useWatch({
     control: form.control,
     name: "loanTerm",
-    defaultValue: 12,
+    defaultValue: loanDetails.requestedTermMonths,
   });
 
   const router = useRouter();

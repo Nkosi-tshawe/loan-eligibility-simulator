@@ -8,7 +8,7 @@ export const personalDetailsFormSchema = z.object({
     .min(18, { message: "Age must be at least 18" })
     .max(100, { message: "Age must be less than 100" }),
   employmentStatus: z.string().min(1, { message: "Employment status is required" }),
-  employmentDuration: z
+  yearsInCurrentRole: z
     .number({ message: "Employment duration is required" })
-    .min(0, { message: "Employment duration cannot be negative" }),
+    .min(1, { message: "Employment duration cannot be negative" }),
 });

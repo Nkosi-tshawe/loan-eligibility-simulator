@@ -2,32 +2,19 @@
 import RadialProgress from "@/components/RadialProgress";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/context/AuthContext";
+import { EligibilityProvider, useEligibility } from "@/context/EligibilityContext";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
-export const NavigationContext = React.createContext({navigation: {currentPageTitle: "", currentPageDescription: "", progress:5}, setNavigation: (navigation: {currentPageTitle: string, currentPageDescription: string, progress: number}) => {}});
-
-export default function EligibilityLayout({
+// Inner component that uses the EligibilityContext
+function EligibilityLayoutContent({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { navigation } = useEligibility();
 
-   
-const [navigation, setNavigation] = React.useState<{currentPageTitle: string, currentPageDescription: string, progress: number}>({currentPageTitle: "", currentPageDescription: "", progress: 5}); 
-
-const { isAuthenticated, loading: authLoading } = useAuth();
-const router = useRouter();
-
-useEffect(() => {
-  if (!authLoading && !isAuthenticated) {
-    router.push('/login');
-  }
-}, [isAuthenticated, authLoading, router]);
-
-
-return (
-    <NavigationContext.Provider value={{navigation, setNavigation}}>
+  return (
     <div className="w-full xl:flex xl:max-w-[1024px] xl:gap-5 mx-auto bg-white xl:bg-transparent rounded-lg p-6 ">
       <div className="flex flex-col gap-4 mb-6 xl:mb-0 xl:bg-white xl:p-10 xl:rounded-lg h-fill">
         <div className="text-center">
@@ -53,6 +40,28 @@ return (
      {children}
      </div>
     </div>
-    </NavigationContext.Provider>
+  );
+}
+
+export default function EligibilityLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const router = useRouter(); 
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isAuthenticated, authLoading, router]);
+
+  return (
+    <EligibilityProvider>
+      <EligibilityLayoutContent>
+        {children}
+      </EligibilityLayoutContent>
+    </EligibilityProvider>
   );
 }

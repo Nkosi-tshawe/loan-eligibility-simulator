@@ -20,16 +20,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { personalDetailsFormSchema } from "./formSchema";
 import { useRouter } from 'next/navigation';
+import { useEligibility } from "@/context/EligibilityContext";
+import { PersonalDetails } from "@/models/PersonalDetails";
 
 export default function PersonalDetailsForm() {
+  const {personDetails,setPersonDetails} = useEligibility();
   const form = useForm<z.infer<typeof personalDetailsFormSchema>>({
     resolver: zodResolver(personalDetailsFormSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      age: undefined,
-      employmentStatus: "",
-      employmentDuration: undefined,
+      firstName: personDetails.firstName,
+      lastName: personDetails.lastName,
+      age: personDetails.age,
+      employmentStatus: personDetails.employmentStatus,
+      yearsInCurrentRole: personDetails.yearsInCurrentRole,
     },
   });
 
@@ -37,11 +40,11 @@ export default function PersonalDetailsForm() {
 
 
   function onSubmit(data: z.infer<typeof personalDetailsFormSchema>) {
-  router.push('/financial-details');
+  setPersonDetails({...data} as PersonalDetails);
     toast("Personal details saved", {
       description: (
         <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(data, null, 2)}</code>
+          <code>{JSON.stringify(personDetails, null, 2)}</code>
         </pre>
       ),
       position: "bottom-right",
@@ -52,6 +55,8 @@ export default function PersonalDetailsForm() {
         "--border-radius": "calc(var(--radius) + 4px)",
       } as React.CSSProperties,
     });
+    router.push('/financial-details');
+
   }
 
   return (
@@ -163,18 +168,18 @@ export default function PersonalDetailsForm() {
         />
 
         <Controller
-          name="employmentDuration"
+          name="yearsInCurrentRole"
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="employmentDuration">
-                Employment Duration (months)
+              <FieldLabel htmlFor="yearsInCurrentRole">
+                Employment Duration (years)
               </FieldLabel>
               <Input
                 {...field}
-                id="employmentDuration"
+                id="yearsInCurrentRole"
                 type="number"
-                placeholder="Enter duration in months"
+                placeholder="Enter duration in years"
                 aria-invalid={fieldState.invalid}
                 className="bg-slate-100"
                 onChange={(e) => {
