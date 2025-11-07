@@ -1,21 +1,21 @@
 "use client";
-import { EligibilityResult, PersonalDetails, FinancialDetails, LoanDetails } from '@/models';
+import { PersonalDetails, FinancialDetails, LoanDetails, EligibilityResponse } from '@/models';
 import { LoanApiClient } from '@/services/LoanApiClient';
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface EligibilityContextType {
     isLoading: boolean;
     personDetails: PersonalDetails;
     financialDetails: FinancialDetails;
     loanDetails: LoanDetails;
-    eligibilityResult: EligibilityResult;
+    eligibilityResult: EligibilityResponse;
     navigation: {currentPageTitle: string, currentPageDescription: string, progress: number},
     setNavigation: (navigation: {currentPageTitle: string, currentPageDescription: string, progress: number}) => void;
     setPersonDetails: (personDetails: PersonalDetails) => Promise<void>;
     setFinancialDetails: (financialDetails: FinancialDetails) => Promise<void>;
     setLoanDetails: (loanDetails: LoanDetails) => Promise<void>;
-    setEligibilityResult: (eligibilityResult: EligibilityResult) => Promise<void>;
-    checkEligibility: () => Promise<void>;
+    setEligibilityResult: (eligibilityResult: EligibilityResponse) => Promise<void>;
+    checkEligibility: (overrideDetails?: { personalDetails?: PersonalDetails; financialDetails?: FinancialDetails; loanDetails?: LoanDetails }) => Promise<void>;
     reset: () => void;
 }
 
@@ -50,36 +50,62 @@ const initialLoanDetails: LoanDetails = {
     requestedTermMonths: 0,
     purpose: 'personal',
 };
-const initialEligibilityResult: EligibilityResult = {
-    eligible: false,
-    maxLoanAmount: 0,
-    recommendedTermMonths: 0,
-    riskCategory: 'low',
-    reasons: [],
+const initialEligibilityResponse: EligibilityResponse = {
+    eligibilityResult: {
+        eligible: false,
+        maxLoanAmount: 0,
+        recommendedTermMonths: 0,
+        riskCategory: 'low',
+        reasons: [],
+    },
+    recommendedLoan: {
+        product: {
+            id: '',
+            name: '',
+            type: 'secured',
+            minAmount: 0,
+            maxAmount: 0,
+            minTermMonths: 0,
+            maxTermMonths: 0,
+            baseRate: 0,
+            description: '',
+        },
+        amount: 0,
+        termMonths: 0,
+        interestRate: 0,
+    },
+    affordabilityAnalysis: {
+        monthlyPayment: 0,
+        debtToIncomeRatio: 0,
+        availableIncome: 0,
+        safetyMargin: 0,
+    },
 };
 
+
 export const EligibilityProvider: React.FC<EligibilityProviderProps> = ({ children }) => {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false); // Used in checkEligibility
     const [personDetails, setPersonDetails] = useState<PersonalDetails>(initialPersonDetails);
     const [financialDetails, setFinancialDetails] = useState<FinancialDetails>(initialFinancialDetails);
     const [loanDetails, setLoanDetails] = useState<LoanDetails>(initialLoanDetails);
-    const [eligibilityResult, setEligibilityResult] = useState<EligibilityResult>(initialEligibilityResult);
+    const [eligibilityResult, setEligibilityResult] = useState<EligibilityResponse>(initialEligibilityResponse);
     const [navigation, setNavigation] = useState<{currentPageTitle: string, currentPageDescription: string, progress: number}>({currentPageTitle: "", currentPageDescription: "", progress: 5});
     const loanApiClient = new LoanApiClient();
 
-    const checkEligibility = async () => {
+    const checkEligibility = async (overrideDetails?: { personalDetails?: PersonalDetails; financialDetails?: FinancialDetails; loanDetails?: LoanDetails }) => {
         setIsLoading(true);
         try {
-        const response = await loanApiClient.checkEligibility({
-            personalDetails: personDetails,
-            financialDetails: financialDetails,
-            loanDetails: loanDetails
+        const response: EligibilityResponse = await loanApiClient.checkEligibility({
+            personalDetails: overrideDetails?.personalDetails ?? personDetails,
+            financialDetails: overrideDetails?.financialDetails ?? financialDetails,
+            loanDetails: overrideDetails?.loanDetails ?? loanDetails
         });
-            setEligibilityResult(response.eligibilityResult);
+            setEligibilityResult(response);
             setIsLoading(false);
         } catch (error) {
             console.error('Error checking eligibility:', error);
             setIsLoading(false);
+            throw error; // Re-throw so caller can handle it
         }
     }
 
@@ -91,17 +117,17 @@ export const EligibilityProvider: React.FC<EligibilityProviderProps> = ({ childr
             loanDetails,
             navigation,
             eligibilityResult,
-            setPersonDetails: async (personDetails: PersonalDetails) => { setPersonDetails(personDetails); },
-            setFinancialDetails: async (financialDetails: FinancialDetails) => { setFinancialDetails(financialDetails); },
-            setLoanDetails: async (loanDetails: LoanDetails) => { setLoanDetails(loanDetails); },
-            setEligibilityResult: async (eligibilityResult: EligibilityResult) => { setEligibilityResult(eligibilityResult); },
+            setPersonDetails: async (details: PersonalDetails) => { setPersonDetails(details); },
+            setFinancialDetails: async (details: FinancialDetails) => { setFinancialDetails(details); },
+            setLoanDetails: async (details: LoanDetails) => { setLoanDetails(details); },
+            setEligibilityResult: async (result: EligibilityResponse) => { setEligibilityResult(result); },
             setNavigation,
             checkEligibility,
             reset: () => {
                 setPersonDetails(initialPersonDetails);
                 setFinancialDetails(initialFinancialDetails);
                 setLoanDetails(initialLoanDetails);
-                setEligibilityResult(initialEligibilityResult);
+                setEligibilityResult(initialEligibilityResponse);
                 setNavigation({currentPageTitle: "", currentPageDescription: "", progress: 25});
             }
         }}>
