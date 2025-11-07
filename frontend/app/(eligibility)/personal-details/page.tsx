@@ -5,7 +5,7 @@ import React from "react";
 import { useEligibility } from "@/context/EligibilityContext";
 
 export default function PersonalDetailsPage() {
-    const { navigation, setNavigation } = useEligibility();
+    const {  setNavigation } = useEligibility();
 
     React.useEffect(() => {
         setNavigation({currentPageTitle: "Personal Details", currentPageDescription: "Complete all steps to unlock your loan eligibility!", progress: 25});

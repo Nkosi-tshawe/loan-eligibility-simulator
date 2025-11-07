@@ -23,9 +23,11 @@ import { loanDetailsFormSchema } from "./formSchema";
 import { useRouter } from "next/navigation";
 import { useEligibility } from "@/context/EligibilityContext";
 import { LoanDetails } from "@/models/LoanDetails";
+import Toaster from "@/lib/showToast";
+import showToast from "@/lib/showToast";
 
 export default function LoanDetailsForm() {
-  const {loanDetails,setLoanDetails,checkEligibility} = useEligibility();
+  const {loanDetails,setLoanDetails,checkEligibility,reset} = useEligibility();
   const form = useForm<z.infer<typeof loanDetailsFormSchema>>({
     resolver: zodResolver(loanDetailsFormSchema),
     defaultValues: {
@@ -46,35 +48,27 @@ export default function LoanDetailsForm() {
   const loanTermYears = loanTermMonths ? Math.floor(loanTermMonths / 12) : 0;
   const loanTermRemainingMonths = loanTermMonths ? loanTermMonths % 12 : 0;
 
+
+
  const onSubmit = async (data: z.infer<typeof loanDetailsFormSchema>) => {
-    setLoanDetails({...data} as unknown as LoanDetails);
-    if(process.env.NEXT_ENV === 'development') { // Only show toast in development environment
-      toast("Loan details saved", {
-      description: (
-        <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius) + 4px)",
-      } as React.CSSProperties,
-    });
-    }
+    
+  const loanDetails: LoanDetails = {
+    requestedAmount: data.loanAmount,
+    requestedTermMonths: data.loanTerm,
+    purpose: data.loanPurpose as LoanDetails['purpose'],
+  };
+
    try {
+    
+    await setLoanDetails(loanDetails);
+    showToast({data, title: "Loan details saved"});
+
     const response = await checkEligibility();
-     toast("Eligibility check completed", {
-      description: (
-        <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(response, null, 2)}</code>
-        </pre>
-      ),
-     });
+    showToast({data:response, title: "Eligibility check completed"});
+    reset();
+    router.push("/eligibility-results");
    } catch (error) {
-    console.error(error);
+    showToast({data:error, title: "Error checking eligibility"});
    }
   }
 

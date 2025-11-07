@@ -1,8 +1,6 @@
 import { z } from "zod";
 
 export const personalDetailsFormSchema = z.object({
-  firstName: z.string().min(1, { message: "First name is required" }),
-  lastName: z.string().min(1, { message: "Last name is required" }),
   age: z
     .number({ message: "Age is required" })
     .min(18, { message: "Age must be at least 18" })

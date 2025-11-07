@@ -17,89 +17,42 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { personalDetailsFormSchema } from "./formSchema";
 import { useRouter } from 'next/navigation';
 import { useEligibility } from "@/context/EligibilityContext";
 import { PersonalDetails } from "@/models/PersonalDetails";
+import showToast from "@/lib/showToast";
 
 export default function PersonalDetailsForm() {
   const {personDetails,setPersonDetails} = useEligibility();
   const form = useForm<z.infer<typeof personalDetailsFormSchema>>({
     resolver: zodResolver(personalDetailsFormSchema),
     defaultValues: {
-      firstName: personDetails.firstName,
-      lastName: personDetails.lastName,
       age: personDetails.age || 18,
-      employmentStatus: personDetails.employmentStatus,
+      employmentStatus: personDetails.employmentStatus || "employed",
       yearsInCurrentRole: personDetails.yearsInCurrentRole || 1,
     },
   });
 
   const router = useRouter();
 
-
-  function onSubmit(data: z.infer<typeof personalDetailsFormSchema>) {
-  setPersonDetails({...data} as PersonalDetails);
-    if(process.env.NEXT_ENV === 'development') { // Only show toast in development environment
-      toast("Personal details saved", {
-        description: (
-          <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-            <code>{JSON.stringify(personDetails, null, 2)}</code>
-          </pre>
-        ),
-      });
-    }
+  async function onSubmit(data: z.infer<typeof personalDetailsFormSchema>) {
+    const personalDetails: PersonalDetails = {
+      age: data.age,
+      employmentStatus: data.employmentStatus as PersonalDetails['employmentStatus'],
+      yearsInCurrentRole: data.yearsInCurrentRole,
+    };
+    
+    await setPersonDetails(personalDetails);
+    
+    showToast({data, title: "Personal detailsss saved"});
+    console.log('Setting personal details:', personalDetails);
     router.push('/financial-details');
-
   }
 
   return (
     <form id="personal-details-form" onSubmit={form.handleSubmit(onSubmit)}>
       <FieldGroup>
-        <div className="flex flex-col gap-2 md:flex-row">
-          <Controller
-            name="firstName"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="flex-1">
-                <FieldLabel htmlFor="firstName">First Name</FieldLabel>
-                <Input
-                  {...field}
-                  id="firstName"
-                  type="text"
-                  placeholder="Enter first name"
-                  aria-invalid={fieldState.invalid}
-                  className="bg-slate-100"
-                />
-                {(fieldState.invalid || fieldState.isTouched) && (
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                )}
-              </Field>
-            )}
-          />
-          <Controller
-            name="lastName"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="flex-1">
-                <FieldLabel htmlFor="lastName">Last Name</FieldLabel>
-                <Input
-                  {...field}
-                  id="lastName"
-                  type="text"
-                  placeholder="Enter last name"
-                  aria-invalid={fieldState.invalid}
-                  className="bg-slate-100"
-                />
-                {(fieldState.invalid || fieldState.isTouched) && (
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                )}
-              </Field>
-            )}
-          />
-        </div>
-
         <Controller
           name="age"
           control={form.control}
