@@ -48,6 +48,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               id: Number(tokenData.userId) || 0,
               username: String(tokenData.unique_name) || '',
               email: String(tokenData.email) || '',
+              firstName: String(tokenData.firstName) || '',
+              lastName: String(tokenData.lastName) || '',
             });
           } else {
             // Token expired, try to refresh

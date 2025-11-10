@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace LoanEligibility.API.Models;
 
 public class PersonalDetails
@@ -9,17 +11,49 @@ public class PersonalDetails
 
 public class FinancialDetails
 {
-    public decimal AnnualIncome { get; set; }
+    public decimal MonthlyIncome { get; set; }
     public decimal MonthlyExpenses { get; set; }
+    
+    // Support both "existingLoans" (from frontend model) and "existingDebt" (from payload)
+    [JsonPropertyName("existingLoans")]
     public decimal ExistingLoans { get; set; }
+    
+    // Alternative property name for backward compatibility
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    [System.Text.Json.Serialization.JsonPropertyName("existingDebt")]
+    public decimal ExistingDebt { get => ExistingLoans; set => ExistingLoans = value; }
+    
     public int CreditScore { get; set; }
 }
 
 public class LoanDetails
 {
+    // Support both "requestedAmount" (from frontend model) and "loanAmount" (from payload)
+    [JsonPropertyName("requestedAmount")]
     public decimal RequestedAmount { get; set; }
+    
+    // Alternative property name for backward compatibility
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    [System.Text.Json.Serialization.JsonPropertyName("loanAmount")]
+    public decimal LoanAmount { get => RequestedAmount; set => RequestedAmount = value; }
+    
+    // Support both "requestedTermMonths" (from frontend model) and "loanTerm" (from payload)
+    [JsonPropertyName("requestedTermMonths")]
     public int RequestedTermMonths { get; set; }
+    
+    // Alternative property name for backward compatibility
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    [System.Text.Json.Serialization.JsonPropertyName("loanTerm")]
+    public int LoanTerm { get => RequestedTermMonths; set => RequestedTermMonths = value; }
+    
+    // Support both "purpose" (from frontend model) and "loanPurpose" (from payload)
+    [JsonPropertyName("purpose")]
     public string Purpose { get; set; } = string.Empty; // 'home', 'car', 'personal', 'education', 'business'
+    
+    // Alternative property name for backward compatibility
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    [System.Text.Json.Serialization.JsonPropertyName("loanPurpose")]
+    public string LoanPurpose { get => Purpose; set => Purpose = value; }
 }
 
 public class EligibilityRequest

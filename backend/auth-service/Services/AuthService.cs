@@ -16,15 +16,18 @@ public class AuthService
     private readonly AuthDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthService> _logger;
+    private readonly IEmailApiClient _emailApiClient;
 
     public AuthService(
         AuthDbContext context,
         IConfiguration configuration,
-        ILogger<AuthService> logger)
+        ILogger<AuthService> logger,
+        IEmailApiClient emailApiClient)
     {
         _context = context;
         _configuration = configuration;
         _logger = logger;
+        _emailApiClient = emailApiClient;
     }
 
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
@@ -38,6 +41,10 @@ public class AuthService
         // Hash password
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
+        // Generate email verification token
+        var verificationToken = GenerateVerificationToken();
+        var tokenExpiresAt = DateTime.UtcNow.AddDays(7); // Token valid for 7 days
+
         // Create user
         var user = new UserEntity
         {
@@ -47,11 +54,24 @@ public class AuthService
             FirstName = request.FirstName,
             LastName = request.LastName,
             IsActive = true,
+            EmailVerified = false,
+            EmailVerificationToken = verificationToken,
+            EmailVerificationTokenExpiresAt = tokenExpiresAt,
             CreatedAt = DateTime.UtcNow
         };
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
+
+        // Send verification email
+        var verificationUrl = _configuration["Email:VerificationUrl"] 
+            ?? _configuration["App:BaseUrl"] + "/verify-email";
+        
+        await _emailApiClient.SendVerificationEmailAsync(
+            user.Email, 
+            user.Username, 
+            verificationToken, 
+            verificationUrl);
 
         // Generate tokens
         var (accessToken, expiresAt) = GenerateAccessToken(user);
@@ -227,6 +247,94 @@ public class AuthService
         return token;
     }
 
+    public async Task<UserDto?> GetUserByIdAsync(int userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null || !user.IsActive)
+        {
+            return null;
+        }
+
+        return MapToDto(user);
+    }
+
+    public async Task<bool> VerifyEmailAsync(string token)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.EmailVerificationToken == token && !u.EmailVerified);
+
+        if (user == null)
+        {
+            return false;
+        }
+
+        // Check if token is expired
+        if (user.EmailVerificationTokenExpiresAt.HasValue && 
+            user.EmailVerificationTokenExpiresAt.Value < DateTime.UtcNow)
+        {
+            return false;
+        }
+
+        // Verify email
+        user.EmailVerified = true;
+        user.EmailVerificationToken = null;
+        user.EmailVerificationTokenExpiresAt = null;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Email verified for user {UserId} ({Email})", user.Id, user.Email);
+
+        return true;
+    }
+
+    public async Task<bool> ResendVerificationEmailAsync(string email)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == email && !u.EmailVerified);
+
+        if (user == null)
+        {
+            // Don't reveal if email exists or is already verified
+            return true;
+        }
+
+        // Generate new verification token
+        var verificationToken = GenerateVerificationToken();
+        var tokenExpiresAt = DateTime.UtcNow.AddDays(7);
+
+        user.EmailVerificationToken = verificationToken;
+        user.EmailVerificationTokenExpiresAt = tokenExpiresAt;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        // Send verification email
+        var verificationUrl = _configuration["Email:VerificationUrl"] 
+            ?? _configuration["App:BaseUrl"] + "/verify-email";
+        
+        await _emailApiClient.SendVerificationEmailAsync(
+            user.Email, 
+            user.Username, 
+            verificationToken, 
+            verificationUrl);
+
+        _logger.LogInformation("Verification email resent for user {UserId} ({Email})", user.Id, user.Email);
+
+        return true;
+    }
+
+    private string GenerateVerificationToken()
+    {
+        var randomBytes = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        return Convert.ToBase64String(randomBytes)
+            .Replace("+", "-")
+            .Replace("/", "_")
+            .Replace("=", "");
+    }
+
     private static UserDto MapToDto(UserEntity user)
     {
         return new UserDto
@@ -235,7 +343,8 @@ public class AuthService
             Username = user.Username,
             Email = user.Email,
             FirstName = user.FirstName,
-            LastName = user.LastName
+            LastName = user.LastName,
+            EmailVerified = user.EmailVerified
         };
     }
 }

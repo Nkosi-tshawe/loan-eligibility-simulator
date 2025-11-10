@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { registerFormSchema } from "./formSchema";
 import { useAuth } from "@/context/AuthContext";
 import { Spinner } from "@/components/ui/spinner";
+import { useTranslations } from "next-intl";
 
 export default function RegisterForm({
   className,
@@ -39,7 +40,7 @@ export default function RegisterForm({
     },
   });
   const {register,loading} = useAuth();
-
+  const t = useTranslations("registerPage");
 const  onSubmit = async (data: z.infer<typeof registerFormSchema>,  e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if(data.email && data.password && data.firstName && data.lastName){
@@ -64,9 +65,9 @@ const  onSubmit = async (data: z.infer<typeof registerFormSchema>,  e: React.For
          <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Register your account</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
           <CardDescription>
-            Enter your email below to create your account
+            {t("description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -75,7 +76,7 @@ const  onSubmit = async (data: z.infer<typeof registerFormSchema>,  e: React.For
               <div className="flex  gap-2">
               <Controller name="firstName" control={form.control} render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="firstName">First Name</FieldLabel>
+                  <FieldLabel htmlFor="firstName">{t("firstName")}</FieldLabel>
                   <Input
                     {...field}
                     id="firstName"
@@ -91,7 +92,7 @@ const  onSubmit = async (data: z.infer<typeof registerFormSchema>,  e: React.For
               )} />
               <Controller name="lastName" control={form.control} render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="lastName">Last Name</FieldLabel>
+                  <FieldLabel htmlFor="lastName">{t("lastName")}</FieldLabel>
                   <Input
                     {...field}
                     id="lastName"
@@ -111,7 +112,7 @@ const  onSubmit = async (data: z.infer<typeof registerFormSchema>,  e: React.For
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="email">Email</FieldLabel>
+                    <FieldLabel htmlFor="email">{t("email")}</FieldLabel>
                     <Input
                       {...field}
                       id="email"
@@ -130,7 +131,7 @@ const  onSubmit = async (data: z.infer<typeof registerFormSchema>,  e: React.For
             <div className="flex flex-col gap-2">
             <Controller name="password" control={form.control} render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <FieldLabel htmlFor="password">{t("password")}</FieldLabel>
                 <Input
                   {...field}
                   id="password"
@@ -146,7 +147,7 @@ const  onSubmit = async (data: z.infer<typeof registerFormSchema>,  e: React.For
             )} />
             <Controller name="confirmPassword" control={form.control} render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
+                <FieldLabel htmlFor="confirmPassword">{t("confirmPassword")}</FieldLabel>
                 <Input
                   {...field}
                   id="confirmPassword"
@@ -161,9 +162,9 @@ const  onSubmit = async (data: z.infer<typeof registerFormSchema>,  e: React.For
             )} />
             </div>
               <Field>
-                <Button type="submit" form="login-form" className="font-bold">{loading ? <Spinner /> : "Register me"}</Button>
+                <Button type="submit" form="login-form" className="font-bold">{loading ? <Spinner /> : t("buttonText")}</Button>
                 <FieldDescription className="text-center">
-                  Already have an account? <a href="/login" className="text-primary hover:text-primary/80 font-bold no-underline!">Login up</a>
+                  {t("loginLink")} <a href="/login" className="text-primary hover:text-primary/80 font-bold no-underline!">Login</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>

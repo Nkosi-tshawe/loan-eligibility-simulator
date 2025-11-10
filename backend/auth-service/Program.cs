@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using AuthService.API.Data;
+using AuthService.API.Services;
 using AuthServiceClass = AuthService.API.Services.AuthService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,6 +48,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // Register services
+builder.Services.AddHttpClient<IEmailApiClient, EmailApiClient>();
 builder.Services.AddScoped<AuthServiceClass>();
 
 // CORS

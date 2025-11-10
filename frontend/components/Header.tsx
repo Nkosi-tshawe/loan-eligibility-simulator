@@ -23,12 +23,15 @@ import {
   } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useMessages } from "next-intl";
 
 export default function Header() {
     const { isAuthenticated,logout,user } = useAuth();
     const router = useRouter();
     const [open, setOpen] = useState(false);
-
+    const messages = useMessages();
+    const menuItems = (messages.navigationMenu as { menuItems: Array<{ label: string; href: string }> })?.menuItems || [];
+   
     const handleRouter = (path: string, e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
         setOpen(false);
@@ -52,7 +55,7 @@ export default function Header() {
                             <DropdownMenu>
                             <DropdownMenuTrigger>
                             <Avatar>
-                                <AvatarFallback>{user?.firstName?.charAt(0)}</AvatarFallback>
+                                <AvatarFallback>{user?.firstName?.charAt(0).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
@@ -84,9 +87,11 @@ export default function Header() {
                     </SheetHeader>
                       <div className="flex flex-col justify-between">
                         <ul className="flex flex-col gap-4 px-4 w-full">
-                            <li><Link href="#" onClick={(e) => handleRouter('/',e)} className="text-sm font-medium text-center block">Home</Link></li>
-                            <li><Link href="#" onClick={(e) => handleRouter('/about',e)} className="text-sm font-medium text-center block">About</Link></li>
-                            <li><Link href="#" onClick={(e) => handleRouter('/contact',e)} className="text-sm font-medium text-center block">Contact</Link></li>
+                          {menuItems.map((item) => (
+                            <li key={item.label}>
+                              <Link href={item.href} onClick={(e) => handleRouter(item.href,e)} className="text-sm font-medium text-center block">{item.label}</Link>
+                            </li>
+                          ))}
                         </ul>
                       </div>
                       <SheetFooter>

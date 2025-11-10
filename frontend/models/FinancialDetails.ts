@@ -1,5 +1,5 @@
 export interface FinancialDetails {
-    annualIncome: number;
+    monthlyIncome: number;
     monthlyExpenses: number;
     existingLoans: number;
     creditScore: number;

@@ -17,89 +17,41 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { personalDetailsFormSchema } from "./formSchema";
 import { useRouter } from 'next/navigation';
+import { useEligibility } from "@/context/EligibilityContext";
+import { PersonalDetails } from "@/models/PersonalDetails";
+import showToast from "@/lib/showToast";
 
 export default function PersonalDetailsForm() {
+  const {personDetails,setPersonDetails} = useEligibility();
   const form = useForm<z.infer<typeof personalDetailsFormSchema>>({
     resolver: zodResolver(personalDetailsFormSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      age: undefined,
-      employmentStatus: "",
-      employmentDuration: undefined,
+      age: personDetails.age || 18,
+      employmentStatus: personDetails.employmentStatus || "employed",
+      yearsInCurrentRole: personDetails.yearsInCurrentRole || 1,
     },
   });
 
   const router = useRouter();
 
-
-  function onSubmit(data: z.infer<typeof personalDetailsFormSchema>) {
-  router.push('/financial-details');
-    toast("Personal details saved", {
-      description: (
-        <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius) + 4px)",
-      } as React.CSSProperties,
-    });
+  async function onSubmit(data: z.infer<typeof personalDetailsFormSchema>) {
+    const personalDetails: PersonalDetails = {
+      age: data.age,
+      employmentStatus: data.employmentStatus as PersonalDetails['employmentStatus'],
+      yearsInCurrentRole: data.yearsInCurrentRole,
+    };
+    
+    await setPersonDetails(personalDetails);
+    
+    showToast({data, title: "Personal detailsss saved"});
+    router.push('/financial-details');
   }
 
   return (
     <form id="personal-details-form" onSubmit={form.handleSubmit(onSubmit)}>
       <FieldGroup>
-        <div className="flex flex-col gap-2 md:flex-row">
-          <Controller
-            name="firstName"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="flex-1">
-                <FieldLabel htmlFor="firstName">First Name</FieldLabel>
-                <Input
-                  {...field}
-                  id="firstName"
-                  type="text"
-                  placeholder="Enter first name"
-                  aria-invalid={fieldState.invalid}
-                  className="bg-slate-100"
-                />
-                {(fieldState.invalid || fieldState.isTouched) && (
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                )}
-              </Field>
-            )}
-          />
-          <Controller
-            name="lastName"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="flex-1">
-                <FieldLabel htmlFor="lastName">Last Name</FieldLabel>
-                <Input
-                  {...field}
-                  id="lastName"
-                  type="text"
-                  placeholder="Enter last name"
-                  aria-invalid={fieldState.invalid}
-                  className="bg-slate-100"
-                />
-                {(fieldState.invalid || fieldState.isTouched) && (
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                )}
-              </Field>
-            )}
-          />
-        </div>
-
         <Controller
           name="age"
           control={form.control}
@@ -109,6 +61,8 @@ export default function PersonalDetailsForm() {
               <Input
                 {...field}
                 id="age"
+                min={18}
+                max={100}
                 type="number"
                 placeholder="Enter your age"
                 aria-invalid={fieldState.invalid}
@@ -146,13 +100,11 @@ export default function PersonalDetailsForm() {
                 >
                   <SelectValue placeholder="Select employment status" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="full-time">Full-time</SelectItem>
-                  <SelectItem value="part-time">Part-time</SelectItem>
+                <SelectContent >
+                  <SelectItem value="employed">Employed</SelectItem>
+                  <SelectItem value="retired">Retired</SelectItem>
                   <SelectItem value="self-employed">Self-employed</SelectItem>
                   <SelectItem value="unemployed">Unemployed</SelectItem>
-                  <SelectItem value="retired">Retired</SelectItem>
-                  <SelectItem value="student">Student</SelectItem>
                 </SelectContent>
               </Select>
               {(fieldState.invalid || fieldState.isTouched) && (
@@ -163,18 +115,20 @@ export default function PersonalDetailsForm() {
         />
 
         <Controller
-          name="employmentDuration"
+          name="yearsInCurrentRole"
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="employmentDuration">
-                Employment Duration (months)
+              <FieldLabel htmlFor="yearsInCurrentRole">
+                Employment Duration (years)
               </FieldLabel>
               <Input
                 {...field}
-                id="employmentDuration"
+                id="yearsInCurrentRole"
                 type="number"
-                placeholder="Enter duration in months"
+                min={1}
+                max={60}
+                placeholder="Enter duration in years"
                 aria-invalid={fieldState.invalid}
                 className="bg-slate-100"
                 onChange={(e) => {
