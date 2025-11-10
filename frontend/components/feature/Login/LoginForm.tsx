@@ -24,6 +24,7 @@ import { loginFormSchema } from "./formSchema";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import { Spinner } from "@/components/ui/spinner"
+import { useTranslations } from "next-intl";
 
 
 export default function LoginForm({
@@ -40,16 +41,12 @@ export default function LoginForm({
 
   const { login, loading } = useAuth();
   const [errorMessage, setErrorMessage] = useState<string>();
+  const t = useTranslations("loginPage");
 
 
   const onSubmit = async (data: z.infer<typeof loginFormSchema>, e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // e.stopPropagation();
-    // console.log(JSON.stringify(data, null, 2));
-    // setLoading(true);
-    console.log("Form is valid: " + form.formState.isValid);
     if (data.email && data.password) {
-      console.log("Form is valid");
       try {
         await login(data.email, data.password);
       } catch (error) {
@@ -62,7 +59,6 @@ export default function LoginForm({
         setErrorMessage("");
       }
     }
-
   }
 
   return (
@@ -70,9 +66,9 @@ export default function LoginForm({
       <div className={cn("flex flex-col gap-6", className)} {...props}>
         <Card>
           <CardHeader>
-            <CardTitle>Login to your accounts</CardTitle>
+            <CardTitle>{t("title")}</CardTitle>
             <CardDescription>
-              Enter your email below to login to your account
+              {t("description")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -86,7 +82,7 @@ export default function LoginForm({
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="email">Email</FieldLabel>
+                      <FieldLabel htmlFor="email">{t("email")}</FieldLabel>
                       <Input
                         {...field}
                         id="email"
@@ -104,7 +100,7 @@ export default function LoginForm({
                 />
                 <Controller name="password" control={form.control} render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="password">Password</FieldLabel>
+                    <FieldLabel htmlFor="password">{t("password")}</FieldLabel>
                     <Input
                       {...field}
                       id="password"
@@ -121,9 +117,9 @@ export default function LoginForm({
                 <Field>
                   {loading ? <Button type="submit" form="login-form" className="font-bold" disabled>
                     <Spinner />
-                    Submitting...</Button> : <Button type="submit" form="login-form" className="font-bold">Login</Button>}
+                    Submitting...</Button> : <Button type="submit" form="login-form" className="font-bold">{t("buttonText")}</Button>}
                   <FieldDescription className="text-center">
-                    Don&apos;t have an account? <a href="/register" className="text-primary hover:text-primary/80 font-bold no-underline!">Sign up</a>
+                    {t("registerLink")} <a href="/register" className="text-primary hover:text-primary/80 font-bold no-underline!">Sign up</a>
                   </FieldDescription>
                 </Field>
               </FieldGroup>

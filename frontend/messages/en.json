@@ -1,0 +1,92 @@
+{
+    
+    "landingPage":{
+        "title": "Fast-Track Your Loan Eligibility.",
+        "description": "Discover your loan options with our secure, streamlined process. Get clarity on your eligibility in just minutes.",
+        "buttonText": "Get Started"
+    },
+
+    "navigationMenu":{
+       "menuItems":[
+            {
+                "label": "Home",
+                "href": "/"
+            },
+            {
+                "label": "About",
+                "href": "/about"
+            },
+            {
+                "label": "Contact",
+                "href": "/contact"
+            },
+            {
+                "label": "Profile",
+                "href": "/profile"
+            },
+            {
+                "label": "Logout",
+                "href": "/logout"
+            }
+       ]
+    },
+
+    "eligibility": {
+        "personalDetails": {
+            "title": "Personal Details",
+            "description": "Please provide your basic personal information."
+        },
+        "financialDetails": {
+            "title": "Financial Details",
+            "description": "Please provide your financial information."
+        },
+        "loanDetails": {
+            "title": "Loan Details",
+            "description": "Please provide information about your loan requirements."
+        }
+    },
+    "loginPage":{
+        "title": "Login to your accounts",
+        "description": "Please enter your email and password to login.",
+        "email": "Email",
+        "password": "Password",
+        "buttonText": "Login",
+        "registerLink": "Don't have an account?"
+    },
+    "registerPage":{
+        "title": "Register your account",
+        "description": "Please enter your email and password to register.",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "password": "Password",
+        "buttonText": "Register",
+        "loginLink": "Already have an account?"
+    },
+    "eligibilityResultPage":{
+        "title": "Your Loan Eligibility Results",
+        "eligiblility":{
+            "egigible":{
+                "title": "Congratulations, you are approved!",
+                "description": "Based on the information provided, you are eligible for the loan. Please review the details below."
+
+            },
+            "notEligible":{
+                "title": "Unfortunately, you are not eligible for the loan.",
+                "description": "Based on the information provided, you are not eligible for the loan. Please review the details below."
+            }
+        },
+        "description": "Please review the details below.",
+        "estimatedMonthlyPayment": "Estimated Monthly Payment",
+        "debtToIncomeRatio": "Debt-to-Income (DTI) Ratio",
+        "availableIncome": "Available Income",
+        "safetyMargin": "Safety Margin",
+        "riskAssessment":{
+            "title": "Risk Assessment",
+            "description": "Your financial profile is strong, placing you in the lowest risk category.",
+            "lowRisk": "Low Risk",
+            "mediumRisk": "Medium Risk",
+            "highRisk": "High Risk"
+        }
+    }
+}

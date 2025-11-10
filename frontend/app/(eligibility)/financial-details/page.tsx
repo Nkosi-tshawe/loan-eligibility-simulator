@@ -3,13 +3,15 @@ import { LockIcon } from "lucide-react";
 import FinancialDetailsForm from "./form/FInancialDetailsForm";
 import { useEligibility } from "@/context/EligibilityContext";
 import React from "react";
+import { useTranslations } from "next-intl";
 
 export default function FinancialDetailsPage() {
-    const { navigation, setNavigation } = useEligibility();
+    const {setNavigation } = useEligibility();
+    const t = useTranslations("eligibility.financialDetails");
 
     React.useEffect(() => {
-        setNavigation({currentPageTitle: "Financial Details", currentPageDescription: "Complete all steps to unlock your loan eligibility!", progress: 50});
-    }, [setNavigation]);
+        setNavigation({currentPageTitle: t("title"), currentPageDescription: t("description"), progress: 50});
+    }, [setNavigation,t]);
     return (
         <div>
             <div className="flex items-center justify-between mb-4"> 

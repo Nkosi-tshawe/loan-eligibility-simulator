@@ -46,7 +46,6 @@ export default function PersonalDetailsForm() {
     await setPersonDetails(personalDetails);
     
     showToast({data, title: "Personal detailsss saved"});
-    console.log('Setting personal details:', personalDetails);
     router.push('/financial-details');
   }
 

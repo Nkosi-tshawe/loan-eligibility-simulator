@@ -2,6 +2,7 @@
 import LoginForm from "@/components/feature/Login/LoginForm";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 

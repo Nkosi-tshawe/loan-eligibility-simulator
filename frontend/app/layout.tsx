@@ -4,6 +4,8 @@ import "./globals.css";
 import Header from "@/components/Header";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/context/AuthContext";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,7 +22,31 @@ export const metadata: Metadata = {
   description: "LoanQuest is a platform for finding the best loans for your needs",
 };
 
-export default function RootLayout({
+async function RootLayoutContent({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const messages = await getMessages();
+  const locale = await getLocale();
+
+  
+  return (
+     <NextIntlClientProvider messages={messages} locale={locale}>
+    
+          <div className="min-h-svh w-full flex flex-col">
+            <Header />
+            <div className=" flex-1 flex items-center justify-center p-6 md:p-10 bg-slate-100 font-sans">
+              {children}
+            </div>
+          </div>
+          <Toaster />
+
+     </NextIntlClientProvider>
+  );
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -31,13 +57,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-svh`}
       >
         <AuthProvider>
-          <div className="min-h-svh w-full flex flex-col">
-            <Header />
-            <div className=" flex-1 flex items-center justify-center p-6 md:p-10 bg-slate-100 font-sans">
-              {children}
-            </div>
-          </div>
-          <Toaster />
+          <RootLayoutContent>
+            {children}
+          </RootLayoutContent>
         </AuthProvider>
       </body>
     </html>

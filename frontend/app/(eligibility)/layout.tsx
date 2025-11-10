@@ -1,6 +1,7 @@
 "use client"
 import RadialProgress from "@/components/RadialProgress";
 import { Progress } from "@/components/ui/progress";
+import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/context/AuthContext";
 import { EligibilityProvider, useEligibility } from "@/context/EligibilityContext";
 import { useRouter } from "next/navigation";
@@ -56,6 +57,21 @@ export default function EligibilityLayout({
       router.push('/login');
     }
   }, [isAuthenticated, authLoading, router]);
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+        <span className="ml-2">Loading...</span>
+      </div>
+    );
+  }
+
+  // Don't render content if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <EligibilityProvider>

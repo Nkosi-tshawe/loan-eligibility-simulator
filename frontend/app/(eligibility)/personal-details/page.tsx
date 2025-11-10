@@ -3,13 +3,15 @@ import PersonalDetailsForm from "./form/PersonDetailsForm";
 import { LockIcon } from "lucide-react";
 import React from "react";
 import { useEligibility } from "@/context/EligibilityContext";
+import { useTranslations } from "next-intl";
 
 export default function PersonalDetailsPage() {
     const {  setNavigation } = useEligibility();
+    const t = useTranslations("eligibility.personalDetails");
 
     React.useEffect(() => {
-        setNavigation({currentPageTitle: "Personal Details", currentPageDescription: "Complete all steps to unlock your loan eligibility!", progress: 25});
-    }, [setNavigation]);
+        setNavigation({currentPageTitle: t("title"), currentPageDescription: t("description"), progress: 25});
+    }, [setNavigation,t]);
 
     return (
         <>

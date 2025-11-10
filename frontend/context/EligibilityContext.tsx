@@ -17,6 +17,7 @@ export interface EligibilityContextType {
     setEligibilityResult: (eligibilityResult: EligibilityResponse) => Promise<void>;
     checkEligibility: (overrideDetails?: { personalDetails?: PersonalDetails; financialDetails?: FinancialDetails; loanDetails?: LoanDetails }) => Promise<void>;
     reset: () => void;
+    loaded: boolean;
 }
 
 export const EligibilityContext = createContext<EligibilityContextType | undefined>(undefined);
@@ -91,7 +92,7 @@ export const EligibilityProvider: React.FC<EligibilityProviderProps> = ({ childr
     const [eligibilityResult, setEligibilityResult] = useState<EligibilityResponse>(initialEligibilityResponse);
     const [navigation, setNavigation] = useState<{currentPageTitle: string, currentPageDescription: string, progress: number}>({currentPageTitle: "", currentPageDescription: "", progress: 5});
     const loanApiClient = new LoanApiClient();
-
+    const [loaded, setLoaded] = useState(false);
     const checkEligibility = async (overrideDetails?: { personalDetails?: PersonalDetails; financialDetails?: FinancialDetails; loanDetails?: LoanDetails }) => {
         setIsLoading(true);
         try {
@@ -102,6 +103,7 @@ export const EligibilityProvider: React.FC<EligibilityProviderProps> = ({ childr
         });
             setEligibilityResult(response);
             setIsLoading(false);
+            setLoaded(true);
         } catch (error) {
             console.error('Error checking eligibility:', error);
             setIsLoading(false);
@@ -112,6 +114,7 @@ export const EligibilityProvider: React.FC<EligibilityProviderProps> = ({ childr
     return <EligibilityContext.Provider
         value={{
             isLoading: false,
+            loaded: false,
             personDetails,
             financialDetails,
             loanDetails,
@@ -129,6 +132,7 @@ export const EligibilityProvider: React.FC<EligibilityProviderProps> = ({ childr
                 setLoanDetails(initialLoanDetails);
                 setEligibilityResult(initialEligibilityResponse);
                 setNavigation({currentPageTitle: "", currentPageDescription: "", progress: 25});
+                setLoaded(false);
             }
         }}>
         {children}

@@ -18,16 +18,14 @@ import {
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { loanDetailsFormSchema } from "./formSchema";
 import { useRouter } from "next/navigation";
 import { useEligibility } from "@/context/EligibilityContext";
 import { LoanDetails } from "@/models/LoanDetails";
-import Toaster from "@/lib/showToast";
 import showToast from "@/lib/showToast";
 
 export default function LoanDetailsForm() {
-  const {loanDetails,setLoanDetails,checkEligibility,reset} = useEligibility();
+  const {loanDetails,setLoanDetails,checkEligibility,personDetails,financialDetails} = useEligibility();
   const form = useForm<z.infer<typeof loanDetailsFormSchema>>({
     resolver: zodResolver(loanDetailsFormSchema),
     defaultValues: {
@@ -50,26 +48,37 @@ export default function LoanDetailsForm() {
 
 
 
- const onSubmit = async (data: z.infer<typeof loanDetailsFormSchema>) => {
+ async function onSubmit (data: z.infer<typeof loanDetailsFormSchema>){
     
-  const loanDetails: LoanDetails = {
-    requestedAmount: data.loanAmount,
-    requestedTermMonths: data.loanTerm,
-    purpose: data.loanPurpose as LoanDetails['purpose'],
-  };
-
-   try {
+  if(data) {
+    const loanDetailsData: LoanDetails = {
+      requestedAmount: data.loanAmount,
+      requestedTermMonths: data.loanTerm,
+      purpose: data.loanPurpose as LoanDetails['purpose'],
+    };
     
-    await setLoanDetails(loanDetails);
-    showToast({data, title: "Loan details saved"});
-
-    const response = await checkEligibility();
-    showToast({data:response, title: "Eligibility check completed"});
-    reset();
-    router.push("/eligibility-results");
-   } catch (error) {
-    showToast({data:error, title: "Error checking eligibility"});
-   }
+    // Set the state first
+    //await setLoanDetails(loanDetailsData);
+    
+    // Use loanDetailsData (the new data) instead of loanDetails (old state)
+    showToast({data: loanDetailsData, title: "Loan detailss saved"});
+    console.log('Setting loan details:', loanDetailsData);
+    
+     try {
+      // Pass the updated loanDetails directly to checkEligibility
+      // This ensures we use the latest data even though React state hasn't updated yet
+      await checkEligibility({
+        loanDetails: loanDetailsData,
+        personalDetails: personDetails,
+        financialDetails: financialDetails,
+      });
+  
+      router.push("/eligibility-results");
+     } catch (error) {
+      console.error('Error checking eligibility:', error);
+      showToast({data: error, title: "Error checking eligibility"});
+     }
+  }
   }
 
   return (
@@ -158,16 +167,11 @@ export default function LoanDetailsForm() {
                   <SelectValue placeholder="Select loan purpose" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="home-purchase">Home Purchase</SelectItem>
-                  <SelectItem value="home-refinancing">Home Refinancing</SelectItem>
-                  <SelectItem value="debt-consolidation">Debt Consolidation</SelectItem>
-                  <SelectItem value="business">Business</SelectItem>
+                  <SelectItem value="home">Home Renovation</SelectItem>
                   <SelectItem value="education">Education</SelectItem>
-                  <SelectItem value="car-vehicle">Car/Vehicle</SelectItem>
+                  <SelectItem value="business">Business</SelectItem>
+                  <SelectItem value="car">Car Financing</SelectItem>
                   <SelectItem value="personal">Personal</SelectItem>
-                  <SelectItem value="medical">Medical Expenses</SelectItem>
-                  <SelectItem value="home-improvement">Home Improvement</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
               {(fieldState.invalid || fieldState.isTouched) && (
@@ -183,7 +187,7 @@ export default function LoanDetailsForm() {
             form="loan-details-form"
             className="w-full font-bold"
           >
-            Continue
+            Submit
           </Button>
         </Field>
       </FieldGroup>
