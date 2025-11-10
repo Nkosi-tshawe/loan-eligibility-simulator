@@ -75,10 +75,11 @@ services:
     networks:
       - loan-network
     depends_on:
+      email-service:
+        condition: service_started
       postgres:
         condition: service_healthy
-      - email-service
-
+      
   loan-service:
     build:
       context: ./backend/loan-service

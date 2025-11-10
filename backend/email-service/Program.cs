@@ -3,7 +3,20 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Email Service API",
+        Version = "v1",
+        Description = "Email notification service for the Loan Eligibility System",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "Loan Eligibility System",
+            Email = "support@loaneligibility.com"
+        }
+    });
+});
 
 // Register services
 builder.Services.AddHttpClient();
@@ -23,11 +36,16 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure pipeline
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Email Service API v1");
+    c.RoutePrefix = "swagger";
+    c.DisplayRequestDuration();
+    c.EnableDeepLinking();
+    c.EnableFilter();
+    c.EnableValidator();
+});
 
 app.UseCors("AllowAll");
 app.MapControllers();

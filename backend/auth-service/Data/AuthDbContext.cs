@@ -19,6 +19,7 @@ public class AuthDbContext : DbContext
 
         modelBuilder.Entity<UserEntity>(entity =>
         {
+            entity.ToTable("Users");
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.Username).IsUnique();
             entity.HasIndex(e => e.EmailVerificationToken);
@@ -26,6 +27,7 @@ public class AuthDbContext : DbContext
 
         modelBuilder.Entity<RefreshTokenEntity>(entity =>
         {
+            entity.ToTable("RefreshTokens");
             entity.HasIndex(e => e.Token).IsUnique();
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.ExpiresAt);

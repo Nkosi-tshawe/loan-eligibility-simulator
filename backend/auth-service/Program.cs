@@ -11,7 +11,45 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Authentication Service API",
+        Version = "v1",
+        Description = "Authentication and user management service for the Loan Eligibility System",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "Loan Eligibility System",
+            Email = "support@loaneligibility.com"
+        }
+    });
+
+    // Add JWT Bearer authentication
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 // Configure database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -64,19 +102,78 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Ensure database is created
+// Ensure database is created and migrated
 using (var scope = app.Services.CreateScope())
 {
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     var context = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
-    context.Database.EnsureCreated();
+    
+    try
+    {
+        logger.LogInformation("Checking database connection...");
+        
+        // Retry logic for database connection
+        var maxRetries = 10;
+        var retryDelay = TimeSpan.FromSeconds(2);
+        var connected = false;
+        
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                if (context.Database.CanConnect())
+                {
+                    logger.LogInformation("Database connection successful");
+                    connected = true;
+                    break;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Database connection attempt {Attempt}/{MaxRetries} failed. Retrying in {Delay} seconds...", 
+                    i + 1, maxRetries, retryDelay.TotalSeconds);
+                if (i == maxRetries - 1)
+                {
+                    logger.LogError("Failed to connect to database after {MaxRetries} attempts", maxRetries);
+                    throw;
+                }
+                Thread.Sleep(retryDelay);
+            }
+        }
+        
+        if (connected)
+        {
+            logger.LogInformation("Ensuring database schema is created...");
+            var created = context.Database.EnsureCreated();
+            
+            if (created)
+            {
+                logger.LogInformation("Database schema created successfully");
+            }
+            else
+            {
+                logger.LogInformation("Database schema already exists");
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while initializing the database");
+        throw;
+    }
 }
 
 // Configure pipeline
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Authentication Service API v1");
+    c.RoutePrefix = "swagger";
+    c.DisplayRequestDuration();
+    c.EnableDeepLinking();
+    c.EnableFilter();
+    c.EnableValidator();
+});
 
 app.UseCors("AllowAll");
 app.UseAuthentication();
