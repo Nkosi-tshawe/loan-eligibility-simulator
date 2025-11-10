@@ -45,7 +45,7 @@ public class LoanEligibilityService
         }
         if (loan.RequestedAmount > maxLoanAmount)
         {
-            reasons.Add($"Requested amount exceeds maximum loan amount of ${maxLoanAmount:N0}");
+            reasons.Add($"Requested amount exceeds maximum loan amount of R{maxLoanAmount:N0}");
         }
 
         // Recommend a product if eligible (using sync method for now)

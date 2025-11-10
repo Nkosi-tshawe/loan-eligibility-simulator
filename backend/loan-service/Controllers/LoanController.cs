@@ -159,7 +159,7 @@ public class LoanController : ControllerBase
                     Field = "annualIncome",
                     Type = "min",
                     Value = 20000,
-                    Message = "Annual income must be at least $20,000"
+                    Message = "Annual income must be at least R20,000"
                 },
                 new ValidationRule
                 {
@@ -180,14 +180,14 @@ public class LoanController : ControllerBase
                     Field = "requestedAmount",
                     Type = "min",
                     Value = 1000,
-                    Message = "Requested amount must be at least $1,000"
+                    Message = "Requested amount must be at least R1,000"
                 },
                 new ValidationRule
                 {
                     Field = "requestedAmount",
                     Type = "max",
                     Value = 2000000,
-                    Message = "Requested amount must be at most $2,000,000"
+                    Message = "Requested amount must be at most R2,000,000"
                 }
             };
 
