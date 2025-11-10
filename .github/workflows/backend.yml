@@ -16,10 +16,14 @@ jobs:
     strategy:
       matrix:
         include:
+          - service-name: api-gateway
+            project-path: backend/api-gateway/ApiGateway.csproj
           - service-name: auth-service
             project-path: backend/auth-service/AuthService.API.csproj
           - service-name: loan-service
             project-path: backend/loan-service/LoanEligibility.API.csproj
+          - service-name: email-service
+            project-path: backend/email-service/EmailService.API.csproj
     
     steps:
     - name: Checkout code
@@ -47,6 +51,10 @@ jobs:
     strategy:
       matrix:
         include:
+          - service-name: api-gateway
+            context: ./backend/api-gateway
+            dockerfile: ./backend/api-gateway/Dockerfile
+            tag: api-gateway:latest
           - service-name: auth-service
             context: ./backend/auth-service
             dockerfile: ./backend/auth-service/Dockerfile
@@ -55,6 +63,10 @@ jobs:
             context: ./backend/loan-service
             dockerfile: ./backend/loan-service/Dockerfile
             tag: loan-service:latest
+          - service-name: email-service
+            context: ./backend/email-service
+            dockerfile: ./backend/email-service/Dockerfile
+            tag: email-service:latest
     
     steps:
     - name: Checkout code
