@@ -21,6 +21,7 @@ public class AuthDbContext : DbContext
         {
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.Username).IsUnique();
+            entity.HasIndex(e => e.EmailVerificationToken);
         });
 
         modelBuilder.Entity<RefreshTokenEntity>(entity =>

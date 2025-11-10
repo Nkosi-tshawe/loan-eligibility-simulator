@@ -35,6 +35,7 @@ public class UserDto
     public string Email { get; set; } = string.Empty;
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
+    public bool EmailVerified { get; set; }
 }
 
 public class ValidateTokenRequest
@@ -48,5 +49,27 @@ public class ValidateTokenResponse
     public int? UserId { get; set; }
     public string? Username { get; set; }
     public string? Email { get; set; }
+}
+
+public class VerifyEmailRequest
+{
+    public string Token { get; set; } = string.Empty;
+}
+
+public class VerifyEmailResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+public class ResendVerificationEmailRequest
+{
+    public string Email { get; set; } = string.Empty;
+}
+
+public class ResendVerificationEmailResponse
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = string.Empty;
 }
 

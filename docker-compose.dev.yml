@@ -57,6 +57,7 @@ services:
     depends_on:
       - auth-service
       - loan-service
+      - email-service
 
   auth-service:
     build:
@@ -68,6 +69,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - PORT=5002
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-authdb};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+      - EmailService__BaseUrl=http://email-service:5004
     volumes:
       - auth-data:/app/data
     networks:
@@ -75,6 +77,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      - email-service
 
   loan-service:
     build:
@@ -93,6 +96,23 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  email-service:
+    build:
+      context: ./backend/email-service
+      dockerfile: Dockerfile
+    ports:
+      - "5004:5004"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - PORT=5004
+      - Email__Mailgun__ApiKey=${MAILGUN_API_KEY:-}
+      - Email__Mailgun__Domain=${MAILGUN_DOMAIN:-}
+      - Email__Mailgun__BaseUrl=${MAILGUN_BASE_URL:-https://api.mailgun.net/v3}
+      - Email__FromAddress=${EMAIL_FROM_ADDRESS:-noreply@loaneligibility.com}
+      - Email__FromName=${EMAIL_FROM_NAME:-Loan Eligibility System}
+    networks:
+      - loan-network
 
   # frontend:
   #   build:
