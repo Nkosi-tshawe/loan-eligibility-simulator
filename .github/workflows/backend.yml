@@ -1,10 +1,10 @@
 name: Backend CI/CD
 
 on:
-  # push:
-  #   branches: [main, master, develop-backend]
-  #   paths:
-  #     - 'backend/**'
+  push:
+    branches: [main, master, develop-backend]
+    paths:
+      - 'backend/**'
   pull_request:
     branches: [main, master, develop-backend]
     paths:
@@ -13,6 +13,13 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - service-name: auth-service
+            project-path: backend/auth-service/AuthService.API.csproj
+          - service-name: loan-service
+            project-path: backend/loan-service/LoanEligibility.API.csproj
     
     steps:
     - name: Checkout code
@@ -24,19 +31,30 @@ jobs:
         dotnet-version: '8.0.x'
         include-prerelease: false
 
-    - name: Restore dependencies
-      run: dotnet restore backend/LoanEligibilityAPI/LoanEligibilityAPI.csproj
+    - name: Restore dependencies for ${{ matrix.service-name }}
+      run: dotnet restore ${{ matrix.project-path }}
 
-    - name: Build
-      run: dotnet build backend/LoanEligibilityAPI/LoanEligibilityAPI.csproj --no-restore -c Release
+    - name: Build ${{ matrix.service-name }}
+      run: dotnet build ${{ matrix.project-path }} --no-restore -c Release
 
-    - name: Test
-      run: dotnet test backend/LoanEligibilityAPI/LoanEligibilityAPI.csproj --no-build --no-restore -c Release
+    - name: Test ${{ matrix.service-name }}
+      run: dotnet test ${{ matrix.project-path }} --no-build --no-restore -c Release --verbosity normal
       continue-on-error: true
 
   docker-build:
     runs-on: ubuntu-latest
     needs: build-and-test
+    strategy:
+      matrix:
+        include:
+          - service-name: auth-service
+            context: ./backend/auth-service
+            dockerfile: ./backend/auth-service/Dockerfile
+            tag: auth-service:latest
+          - service-name: loan-service
+            context: ./backend/loan-service
+            dockerfile: ./backend/loan-service/Dockerfile
+            tag: loan-service:latest
     
     steps:
     - name: Checkout code
@@ -45,13 +63,12 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Build Docker image
+    - name: Build Docker image for ${{ matrix.service-name }}
       uses: docker/build-push-action@v5
       with:
-        context: ./backend
-        file: ./backend/LoanEligibilityAPI/Dockerfile
+        context: ${{ matrix.context }}
+        file: ${{ matrix.dockerfile }}
         push: false
-        tags: loan-eligibility-backend:latest
+        tags: ${{ matrix.tag }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
-
