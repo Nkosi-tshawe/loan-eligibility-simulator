@@ -4,7 +4,7 @@ export const financialDetailsFormSchema = z.object({
   monthlyIncome: z
     .number({ message: "Monthly income is required" })
     .min(0, { message: "Monthly income cannot be negative" })
-    .positive({ message: "Monthly income must be greater than 0" }),
+    .min(1000, { message: "Monthly income must be at least R1,000" }),
   monthlyExpenses: z
     .number({ message: "Monthly expenses is required" })
     .min(0, { message: "Monthly expenses cannot be negative" })

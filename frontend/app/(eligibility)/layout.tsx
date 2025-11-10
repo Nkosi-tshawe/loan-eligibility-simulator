@@ -1,23 +1,21 @@
 "use client"
+import RadialProgress from "@/components/RadialProgress";
 import { Progress } from "@/components/ui/progress";
-import React from "react";
-import { any, unknown } from "zod";
+import { Spinner } from "@/components/ui/spinner";
+import { useAuth } from "@/context/AuthContext";
+import { EligibilityProvider, useEligibility } from "@/context/EligibilityContext";
+import { useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 
-export const NavigationContext = React.createContext({navigation: {currentPageTitle: "", currentPageDescription: "", progress:5}, setNavigation: (navigation: {currentPageTitle: string, currentPageDescription: string, progress: number}) => {}});
-
-export default function EligibilityLayout({
+// Inner component that uses the EligibilityContext
+function EligibilityLayoutContent({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { navigation } = useEligibility();
 
-   
-
-   
-const [navigation, setNavigation] = React.useState<{currentPageTitle: string, currentPageDescription: string, progress: number}>({currentPageTitle: "", currentPageDescription: "", progress: 5}); 
-  
-return (
-    <NavigationContext.Provider value={{navigation, setNavigation}}>
+  return (
     <div className="w-full xl:flex xl:max-w-[1024px] xl:gap-5 mx-auto bg-white xl:bg-transparent rounded-lg p-6 ">
       <div className="flex flex-col gap-4 mb-6 xl:mb-0 xl:bg-white xl:p-10 xl:rounded-lg h-fill">
         <div className="text-center">
@@ -28,20 +26,58 @@ return (
             {navigation.currentPageDescription}
           </p>
         </div>
-        <div className="w-full max-w-sm">
-        <Progress value={navigation.progress} className="w-full" />
-          <p className="text-sm text-gray-500 text-center mt-2">
+        <div className="w-full">
+        <Progress value={navigation.progress} className="w-full block xl:hidden" />
+      
+          <p className="text-sm text-gray-500 text-center mt-2 xl:hidden">
             {navigation.progress}% Complete - You&apos;re doing great!
           </p>
         </div>
-        <div className="w-full bg-gray-100 rounded-lg p-4 flex-1">
-
+        <div className="w-full bg-gray-100 rounded-lg p-4 flex-1 flex items-center justify-center hidden xl:flex">
+        <RadialProgress value={navigation.progress} valueColorClass="text-primary" label={`Complete`}  progressColor="success"/>
         </div>
       </div>
      <div className="md:flex-1 xl:bg-white xl:p-10 xl:rounded-lg h-fill">
      {children}
      </div>
     </div>
-    </NavigationContext.Provider>
+  );
+}
+
+export default function EligibilityLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const router = useRouter(); 
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isAuthenticated, authLoading, router]);
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+        <span className="ml-2">Loading...</span>
+      </div>
+    );
+  }
+
+  // Don't render content if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <EligibilityProvider>
+      <EligibilityLayoutContent>
+        {children}
+      </EligibilityLayoutContent>
+    </EligibilityProvider>
   );
 }

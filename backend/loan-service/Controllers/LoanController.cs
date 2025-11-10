@@ -32,6 +32,33 @@ public class LoanController : ControllerBase
     {
         try
         {
+            // Validate request
+            if (request == null)
+            {
+                return BadRequest(new { error = "Request body is required" });
+            }
+
+            if (request.PersonalDetails == null)
+            {
+                return BadRequest(new { error = "PersonalDetails is required" });
+            }
+
+            if (request.FinancialDetails == null)
+            {
+                return BadRequest(new { error = "FinancialDetails is required" });
+            }
+
+            if (request.LoanDetails == null)
+            {
+                return BadRequest(new { error = "LoanDetails is required" });
+            }
+
+            // Validate loan purpose
+            if (string.IsNullOrEmpty(request.LoanDetails.Purpose))
+            {
+                return BadRequest(new { error = "Loan purpose is required" });
+            }
+
             var (eligibility, product) = _eligibilityService.CalculateEligibility(request);
 
             RecommendedLoan? recommendedLoan = null;
@@ -132,7 +159,7 @@ public class LoanController : ControllerBase
                     Field = "annualIncome",
                     Type = "min",
                     Value = 20000,
-                    Message = "Annual income must be at least $20,000"
+                    Message = "Annual income must be at least R20,000"
                 },
                 new ValidationRule
                 {
@@ -153,14 +180,14 @@ public class LoanController : ControllerBase
                     Field = "requestedAmount",
                     Type = "min",
                     Value = 1000,
-                    Message = "Requested amount must be at least $1,000"
+                    Message = "Requested amount must be at least R1,000"
                 },
                 new ValidationRule
                 {
                     Field = "requestedAmount",
                     Type = "max",
                     Value = 2000000,
-                    Message = "Requested amount must be at most $2,000,000"
+                    Message = "Requested amount must be at most R2,000,000"
                 }
             };
 

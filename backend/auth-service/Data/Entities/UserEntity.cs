@@ -32,6 +32,11 @@ public class UserEntity
 
     public DateTime? LastLoginAt { get; set; }
 
+    // Email verification fields
+    public bool EmailVerified { get; set; } = false;
+    public string? EmailVerificationToken { get; set; }
+    public DateTime? EmailVerificationTokenExpiresAt { get; set; }
+
     // Navigation property
     public ICollection<RefreshTokenEntity> RefreshTokens { get; set; } = new List<RefreshTokenEntity>();
 }

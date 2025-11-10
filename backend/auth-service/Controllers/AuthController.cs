@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using AuthService.API.Models;
-using AuthService.API.Services;
+using AuthServiceClass = AuthService.API.Services.AuthService;
 
 namespace AuthService.API.Controllers;
 
@@ -8,10 +10,10 @@ namespace AuthService.API.Controllers;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly AuthService _authService;
+    private readonly AuthServiceClass _authService;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(AuthService authService, ILogger<AuthController> logger)
+    public AuthController(AuthServiceClass authService, ILogger<AuthController> logger)
     {
         _authService = authService;
         _logger = logger;
@@ -86,6 +88,151 @@ public class AuthController : ControllerBase
         {
             _logger.LogError(ex, "Error during token validation");
             return StatusCode(500, new { error = "An error occurred during token validation" });
+        }
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        try
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized(new { error = "Invalid user token" });
+            }
+
+            var user = await _authService.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound(new { error = "User not found" });
+            }
+
+            return Ok(user);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving current user");
+            return StatusCode(500, new { error = "An error occurred while retrieving user details" });
+        }
+    }
+
+    [HttpPost("verify-email")]
+    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.Token))
+            {
+                return BadRequest(new VerifyEmailResponse
+                {
+                    Success = false,
+                    Message = "Verification token is required"
+                });
+            }
+
+            var success = await _authService.VerifyEmailAsync(request.Token);
+            
+            if (success)
+            {
+                return Ok(new VerifyEmailResponse
+                {
+                    Success = true,
+                    Message = "Email verified successfully"
+                });
+            }
+
+            return BadRequest(new VerifyEmailResponse
+            {
+                Success = false,
+                Message = "Invalid or expired verification token"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during email verification");
+            return StatusCode(500, new VerifyEmailResponse
+            {
+                Success = false,
+                Message = "An error occurred during email verification"
+            });
+        }
+    }
+
+    [HttpGet("verify-email")]
+    public async Task<IActionResult> VerifyEmailGet([FromQuery] string token)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return BadRequest(new VerifyEmailResponse
+                {
+                    Success = false,
+                    Message = "Verification token is required"
+                });
+            }
+
+            var success = await _authService.VerifyEmailAsync(token);
+            
+            if (success)
+            {
+                return Ok(new VerifyEmailResponse
+                {
+                    Success = true,
+                    Message = "Email verified successfully"
+                });
+            }
+
+            return BadRequest(new VerifyEmailResponse
+            {
+                Success = false,
+                Message = "Invalid or expired verification token"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during email verification");
+            return StatusCode(500, new VerifyEmailResponse
+            {
+                Success = false,
+                Message = "An error occurred during email verification"
+            });
+        }
+    }
+
+    [HttpPost("resend-verification")]
+    public async Task<IActionResult> ResendVerificationEmail([FromBody] ResendVerificationEmailRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+            {
+                return BadRequest(new ResendVerificationEmailResponse
+                {
+                    Success = false,
+                    Message = "Email address is required"
+                });
+            }
+
+            // Always return success to prevent email enumeration
+            await _authService.ResendVerificationEmailAsync(request.Email);
+            
+            return Ok(new ResendVerificationEmailResponse
+            {
+                Success = true,
+                Message = "If the email address is registered and not yet verified, a verification email has been sent"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resending verification email");
+            return StatusCode(500, new ResendVerificationEmailResponse
+            {
+                Success = false,
+                Message = "An error occurred while resending the verification email"
+            });
         }
     }
 

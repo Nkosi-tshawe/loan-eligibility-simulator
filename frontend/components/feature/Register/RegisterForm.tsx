@@ -21,6 +21,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { registerFormSchema } from "./formSchema";
+import { useAuth } from "@/context/AuthContext";
+import { Spinner } from "@/components/ui/spinner";
+import { useTranslations } from "next-intl";
 
 export default function RegisterForm({
   className,
@@ -33,25 +36,28 @@ export default function RegisterForm({
       lastName: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
-
-  function onSubmit(data: z.infer<typeof registerFormSchema>) {
-    // console.log(JSON.stringify(data, null, 2));
-    toast("Login successful", {
-      description: (
-        <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as React.CSSProperties,
-    });
+  const {register,loading} = useAuth();
+  const t = useTranslations("registerPage");
+const  onSubmit = async (data: z.infer<typeof registerFormSchema>,  e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if(data.email && data.password && data.firstName && data.lastName){
+      try{
+        await register(data.email, data.email, data.password, data.firstName, data.lastName);
+      } catch (error: unknown) {
+        let errorMessage = 'Registration failed';
+        if (error instanceof Error) {
+          errorMessage = error.message;
+          if (errorMessage === 'Username or email already exists') {
+            form.setError("email", { type: "manual", message: "Email already exists" });
+          }
+        }
+        toast.error(errorMessage);
+      }
+    }
+  
   }
 
   return (
@@ -59,18 +65,18 @@ export default function RegisterForm({
          <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Register your account</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
           <CardDescription>
-            Enter your email below to create your account
+            {t("description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form id="login-form" onSubmit={form.handleSubmit(onSubmit)}>
+          <form id="login-form" onSubmit={(e) => form.handleSubmit((data)=> onSubmit(data,e))(e)}>
             <FieldGroup>
               <div className="flex  gap-2">
               <Controller name="firstName" control={form.control} render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="firstName">First Name</FieldLabel>
+                  <FieldLabel htmlFor="firstName">{t("firstName")}</FieldLabel>
                   <Input
                     {...field}
                     id="firstName"
@@ -86,7 +92,7 @@ export default function RegisterForm({
               )} />
               <Controller name="lastName" control={form.control} render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="lastName">Last Name</FieldLabel>
+                  <FieldLabel htmlFor="lastName">{t("lastName")}</FieldLabel>
                   <Input
                     {...field}
                     id="lastName"
@@ -106,7 +112,7 @@ export default function RegisterForm({
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="email">Email</FieldLabel>
+                    <FieldLabel htmlFor="email">{t("email")}</FieldLabel>
                     <Input
                       {...field}
                       id="email"
@@ -125,7 +131,7 @@ export default function RegisterForm({
             <div className="flex flex-col gap-2">
             <Controller name="password" control={form.control} render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="password">Password</FieldLabel>
+                <FieldLabel htmlFor="password">{t("password")}</FieldLabel>
                 <Input
                   {...field}
                   id="password"
@@ -141,7 +147,7 @@ export default function RegisterForm({
             )} />
             <Controller name="confirmPassword" control={form.control} render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
+                <FieldLabel htmlFor="confirmPassword">{t("confirmPassword")}</FieldLabel>
                 <Input
                   {...field}
                   id="confirmPassword"
@@ -156,9 +162,9 @@ export default function RegisterForm({
             )} />
             </div>
               <Field>
-                <Button type="submit" form="login-form" className="font-bold">Register me</Button>
+                <Button type="submit" form="login-form" className="font-bold">{loading ? <Spinner /> : t("buttonText")}</Button>
                 <FieldDescription className="text-center">
-                  Already have an account? <a href="/login" className="text-primary hover:text-primary/80 font-bold no-underline!">Login up</a>
+                  {t("loginLink")} <a href="/login" className="text-primary hover:text-primary/80 font-bold no-underline!">Login</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>

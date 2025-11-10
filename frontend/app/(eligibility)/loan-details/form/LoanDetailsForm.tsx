@@ -18,24 +18,27 @@ import {
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { loanDetailsFormSchema } from "./formSchema";
 import { useRouter } from "next/navigation";
+import { useEligibility } from "@/context/EligibilityContext";
+import { LoanDetails } from "@/models/LoanDetails";
+import showToast from "@/lib/showToast";
 
 export default function LoanDetailsForm() {
+  const {loanDetails,setLoanDetails,checkEligibility,personDetails,financialDetails} = useEligibility();
   const form = useForm<z.infer<typeof loanDetailsFormSchema>>({
     resolver: zodResolver(loanDetailsFormSchema),
     defaultValues: {
-      loanAmount: undefined,
-      loanTerm: 12,
-      loanPurpose: "",
+      loanAmount: loanDetails.requestedAmount || 1000,
+      loanTerm: loanDetails.requestedTermMonths || 6,
+      loanPurpose: loanDetails.purpose || 'personal',
     },
   });
 
   const loanTermMonths = useWatch({
     control: form.control,
     name: "loanTerm",
-    defaultValue: 12,
+    defaultValue: loanDetails.requestedTermMonths || 6,
   });
 
   const router = useRouter();
@@ -43,22 +46,39 @@ export default function LoanDetailsForm() {
   const loanTermYears = loanTermMonths ? Math.floor(loanTermMonths / 12) : 0;
   const loanTermRemainingMonths = loanTermMonths ? loanTermMonths % 12 : 0;
 
-  function onSubmit(data: z.infer<typeof loanDetailsFormSchema>) {
-    router.push("/eligibility-results");
-    toast("Loan details saved", {
-      description: (
-        <pre className="bg-code text-gray-500 mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius) + 4px)",
-      } as React.CSSProperties,
-    });
+
+
+ async function onSubmit (data: z.infer<typeof loanDetailsFormSchema>){
+    
+  if(data) {
+    const loanDetailsData: LoanDetails = {
+      requestedAmount: data.loanAmount,
+      requestedTermMonths: data.loanTerm,
+      purpose: data.loanPurpose as LoanDetails['purpose'],
+    };
+    
+    // Set the state first
+    //await setLoanDetails(loanDetailsData);
+    
+    // Use loanDetailsData (the new data) instead of loanDetails (old state)
+    showToast({data: loanDetailsData, title: "Loan detailss saved"});
+    console.log('Setting loan details:', loanDetailsData);
+    
+     try {
+      // Pass the updated loanDetails directly to checkEligibility
+      // This ensures we use the latest data even though React state hasn't updated yet
+      await checkEligibility({
+        loanDetails: loanDetailsData,
+        personalDetails: personDetails,
+        financialDetails: financialDetails,
+      });
+  
+      router.push("/eligibility-results");
+     } catch (error) {
+      console.error('Error checking eligibility:', error);
+      showToast({data: error, title: "Error checking eligibility"});
+     }
+  }
   }
 
   return (
@@ -147,16 +167,11 @@ export default function LoanDetailsForm() {
                   <SelectValue placeholder="Select loan purpose" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="home-purchase">Home Purchase</SelectItem>
-                  <SelectItem value="home-refinancing">Home Refinancing</SelectItem>
-                  <SelectItem value="debt-consolidation">Debt Consolidation</SelectItem>
-                  <SelectItem value="business">Business</SelectItem>
+                  <SelectItem value="home">Home Renovation</SelectItem>
                   <SelectItem value="education">Education</SelectItem>
-                  <SelectItem value="car-vehicle">Car/Vehicle</SelectItem>
+                  <SelectItem value="business">Business</SelectItem>
+                  <SelectItem value="car">Car Financing</SelectItem>
                   <SelectItem value="personal">Personal</SelectItem>
-                  <SelectItem value="medical">Medical Expenses</SelectItem>
-                  <SelectItem value="home-improvement">Home Improvement</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
               {(fieldState.invalid || fieldState.isTouched) && (
@@ -172,7 +187,7 @@ export default function LoanDetailsForm() {
             form="loan-details-form"
             className="w-full font-bold"
           >
-            Continue
+            Submit
           </Button>
         </Field>
       </FieldGroup>
