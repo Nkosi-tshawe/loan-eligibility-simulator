@@ -18,7 +18,7 @@ builder.Services.AddSwaggerGen(c =>
         Contact = new Microsoft.OpenApi.Models.OpenApiContact
         {
             Name = "Loan Eligibility System",
-            Email = "support@loaneligibility.com"
+            Email = "tag.tix9@gmail.com"
         }
     });
 

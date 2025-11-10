@@ -68,7 +68,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - PORT=5002
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-authdb};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-loaneligibility};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
       - EmailService__BaseUrl=http://email-service:5004
     volumes:
       - auth-data:/app/data
