@@ -22,45 +22,49 @@ public class EmailService : IEmailService
         var fromAddress = _configuration["Email:FromAddress"] ?? "noreply@loaneligibility.com";
         var fromName = _configuration["Email:FromName"] ?? "Loan Eligibility System";
         var subject = "Verify Your Email Address";
+        var htmlTemplate = File.ReadAllText("templates/EmailVerification.html");
+        var htmlBody = htmlTemplate.Replace("{fullUrl}", fullUrl).Replace("{userName}", username);
         
-        var htmlBody = $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .button {{ display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
-        .button:hover {{ background-color: #0056b3; }}
-        .footer {{ margin-top: 30px; font-size: 12px; color: #666; }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <h2>Welcome, {username}!</h2>
-        <p>Thank you for registering with Loan Eligibility System. Please verify your email address by clicking the button below:</p>
-        <a href='{fullUrl}' class='button'>Verify Email Address</a>
-        <p>Or copy and paste this link into your browser:</p>
-        <p style='word-break: break-all; color: #007bff;'>{fullUrl}</p>
-        <p>This verification link will expire in 7 days.</p>
-        <div class='footer'>
-            <p>If you did not create an account, please ignore this email.</p>
-        </div>
-    </div>
-</body>
-</html>";
+//         var htmlBody = $@"
+// <!DOCTYPE html>
+// <html>
+// <head>
+//     <meta charset='utf-8'>
+//     <style>
+//         body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+//         .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+//         .button {{ display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+//         .button:hover {{ background-color: #0056b3; }}
+//         .footer {{ margin-top: 30px; font-size: 12px; color: #666; }}
+//     </style>
+// </head>
+// <body>
+//     <div class='container'>
+//         <h2>Welcome, {username}!</h2>
+//         <p>Thank you for registering with Loan Eligibility System. Please verify your email address by clicking the button below:</p>
+//         <a href='{fullUrl}' class='button'>Verify Email Address</a>
+//         <p>Or copy and paste this link into your browser:</p>
+//         <p style='word-break: break-all; color: #007bff;'>{fullUrl}</p>
+//         <p>This verification link will expire in 7 days.</p>
+//         <div class='footer'>
+//             <p>If you did not create an account, please ignore this email.</p>
+//         </div>
+//     </div>
+// </body>
+// </html>";
+    var textTemplate = File.ReadAllText("templates/EmailVerification.txt");
+    var textBody = textTemplate.Replace("{fullUrl}", fullUrl).Replace("{userName}", username);
 
-        var textBody = $@"
-Welcome, {username}!
+//         var textBody = $@"
+// Welcome, {username}!
 
-Thank you for registering with Loan Eligibility System. Please verify your email address by visiting the following link:
+// Thank you for registering with Loan Eligibility System. Please verify your email address by visiting the following link:
 
-{fullUrl}
+// {fullUrl}
 
-This verification link will expire in 7 days.
+// This verification link will expire in 7 days.
 
-If you did not create an account, please ignore this email.";
+// If you did not create an account, please ignore this email.";
 
         await SendEmailAsync(email, fromAddress, fromName, subject, htmlBody, textBody);
     }
@@ -72,51 +76,54 @@ If you did not create an account, please ignore this email.";
         var fromAddress = _configuration["Email:FromAddress"] ?? "noreply@loaneligibility.com";
         var fromName = _configuration["Email:FromName"] ?? "Loan Eligibility System";
         var subject = "Reset Your Password";
+        var htmlTemplate = File.ReadAllText("templates/PasswordReset.html");
+        var htmlBody = htmlTemplate.Replace("{fullUrl}", fullUrl).Replace("{userName}", username);
         
-        var htmlBody = $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .button {{ display: inline-block; padding: 12px 24px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
-        .button:hover {{ background-color: #c82333; }}
-        .footer {{ margin-top: 30px; font-size: 12px; color: #666; }}
-        .warning {{ background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 20px 0; }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <h2>Password Reset Request</h2>
-        <p>Hello {username},</p>
-        <p>We received a request to reset your password. Click the button below to reset it:</p>
-        <a href='{fullUrl}' class='button'>Reset Password</a>
-        <p>Or copy and paste this link into your browser:</p>
-        <p style='word-break: break-all; color: #dc3545;'>{fullUrl}</p>
-        <div class='warning'>
-            <strong>Important:</strong> This link will expire in 1 hour. If you did not request a password reset, please ignore this email and your password will remain unchanged.
-        </div>
-        <div class='footer'>
-            <p>If you did not request this password reset, please contact support immediately.</p>
-        </div>
-    </div>
-</body>
-</html>";
+//         var htmlBody = $@"
+// <!DOCTYPE html>
+// <html>
+// <head>
+//     <meta charset='utf-8'>
+//     <style>
+//         body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+//         .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+//         .button {{ display: inline-block; padding: 12px 24px; background-color: #dc3545; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+//         .button:hover {{ background-color: #c82333; }}
+//         .footer {{ margin-top: 30px; font-size: 12px; color: #666; }}
+//         .warning {{ background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 20px 0; }}
+//     </style>
+// </head>
+// <body>
+//     <div class='container'>
+//         <h2>Password Reset Request</h2>
+//         <p>Hello {username},</p>
+//         <p>We received a request to reset your password. Click the button below to reset it:</p>
+//         <a href='{fullUrl}' class='button'>Reset Password</a>
+//         <p>Or copy and paste this link into your browser:</p>
+//         <p style='word-break: break-all; color: #dc3545;'>{fullUrl}</p>
+//         <div class='warning'>
+//             <strong>Important:</strong> This link will expire in 1 hour. If you did not request a password reset, please ignore this email and your password will remain unchanged.
+//         </div>
+//         <div class='footer'>
+//             <p>If you did not request this password reset, please contact support immediately.</p>
+//         </div>
+//     </div>
+// </body>
+// </html>";
+    var textTemplate = File.ReadAllText("templates/PasswordReset.txt");
+    var textBody = textTemplate.Replace("{fullUrl}", fullUrl).Replace("{userName}", username);
+//         var textBody = $@"
+// Password Reset Request
 
-        var textBody = $@"
-Password Reset Request
+// Hello {username},
 
-Hello {username},
+// We received a request to reset your password. Visit the following link to reset it:
 
-We received a request to reset your password. Visit the following link to reset it:
+// {fullUrl}
 
-{fullUrl}
+// This link will expire in 1 hour.
 
-This link will expire in 1 hour.
-
-If you did not request a password reset, please ignore this email and your password will remain unchanged.";
+// If you did not request a password reset, please ignore this email and your password will remain unchanged.";
 
         await SendEmailAsync(email, fromAddress, fromName, subject, htmlBody, textBody);
     }

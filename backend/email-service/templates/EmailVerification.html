@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .button:hover { background-color: #0056b3; }
+        .footer { margin-top: 30px; font-size: 12px; color: #666; }
+        .header { display: flex; align-items: center; gap:4px}
+        .logo { width: 32px; height: 32px; }
+        .title { font-size: 28px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class="header">
+            <span class="logo">
+                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M4 4H17.3334V17.3334H30.6666V30.6666H44V44H4V4Z" fill="currentColor"></path></svg>
+       
+            </span>
+            <h1 class="title">LoanQuest</h1>
+        </div>
+        <h2>Welcome, {userName}!</h2>
+        <p>Thank you for registering with Loan Eligibility System. Please verify your email address by clicking the button below:</p>
+        <a href='{fullUrl}' class='button'>Verify Email Address</a>
+        <p>Or copy and paste this link into your browser:</p>
+        <p style='word-break: break-all; color: #007bff;'>{fullUrl}</p>
+        <p>This verification link will expire in 7 days.</p>
+        <div class='footer'>
+            <p>If you did not create an account, please ignore this email.</p>
+        </div>
+    </div>
+</body>
+</html>
