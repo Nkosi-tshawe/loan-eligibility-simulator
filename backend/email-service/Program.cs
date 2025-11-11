@@ -12,7 +12,7 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Email notification service for the Loan Eligibility System",
         Contact = new Microsoft.OpenApi.Models.OpenApiContact
         {
-            Name = "Loan Eligibility System",
+            Name = "LoanQuest",
             Email = "tag.tix9@gmail.com"
         }
     });
