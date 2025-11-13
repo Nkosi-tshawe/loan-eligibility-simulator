@@ -2,11 +2,11 @@
 import PersonalDetailsForm from "./form/PersonDetailsForm";
 import { LockIcon } from "lucide-react";
 import React from "react";
-import { useEligibility } from "@/context/EligibilityContext";
+import { useEligibilityStore } from "@/stores";
 import { useTranslations } from "next-intl";
 
 export default function PersonalDetailsPage() {
-    const {  setNavigation } = useEligibility();
+    const {  setNavigation } = useEligibilityStore();
     const t = useTranslations("eligibility.personalDetails");
 
     React.useEffect(() => {

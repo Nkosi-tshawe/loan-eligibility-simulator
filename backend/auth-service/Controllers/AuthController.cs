@@ -236,6 +236,100 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+            {
+                return BadRequest(new ForgotPasswordResponse
+                {
+                    Success = false,
+                    Message = "Email address is required"
+                });
+            }
+
+            // Always return success to prevent email enumeration
+            await _authService.RequestPasswordResetAsync(request.Email);
+            
+            return Ok(new ForgotPasswordResponse
+            {
+                Success = true,
+                Message = "If an account exists with that email, a password reset link has been sent"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing forgot password request");
+            return StatusCode(500, new ForgotPasswordResponse
+            {
+                Success = false,
+                Message = "An error occurred while processing your request"
+            });
+        }
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.Token))
+            {
+                return BadRequest(new ResetPasswordResponse
+                {
+                    Success = false,
+                    Message = "Reset token is required"
+                });
+            }
+
+            if (string.IsNullOrWhiteSpace(request.NewPassword))
+            {
+                return BadRequest(new ResetPasswordResponse
+                {
+                    Success = false,
+                    Message = "New password is required"
+                });
+            }
+
+            if (request.NewPassword.Length < 8)
+            {
+                return BadRequest(new ResetPasswordResponse
+                {
+                    Success = false,
+                    Message = "Password must be at least 8 characters long"
+                });
+            }
+
+            var success = await _authService.ResetPasswordAsync(request.Token, request.NewPassword);
+            
+            if (success)
+            {
+                return Ok(new ResetPasswordResponse
+                {
+                    Success = true,
+                    Message = "Password reset successfully"
+                });
+            }
+
+            return BadRequest(new ResetPasswordResponse
+            {
+                Success = false,
+                Message = "Invalid or expired reset token"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during password reset");
+            return StatusCode(500, new ResetPasswordResponse
+            {
+                Success = false,
+                Message = "An error occurred during password reset"
+            });
+        }
+    }
+
     [HttpGet("health")]
     public IActionResult Health()
     {

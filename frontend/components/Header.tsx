@@ -10,7 +10,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/stores";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -26,7 +26,7 @@ import { useState } from "react";
 import { useMessages } from "next-intl";
 
 export default function Header() {
-    const { isAuthenticated,logout,user } = useAuth();
+    const { isAuthenticated,logout,user } = useAuthStore();
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const messages = useMessages();

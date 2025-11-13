@@ -8,7 +8,45 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Loan Eligibility API Gateway",
+        Version = "v1",
+        Description = "API Gateway for Loan Eligibility System - Routes requests to microservices",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "Loan Eligibility System",
+            Email = "tag.tix9@gmail.com"
+        }
+    });
+
+    // Add JWT Bearer authentication
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 // Configure JWT for token validation
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "YourSuperSecretKeyThatShouldBeAtLeast32CharactersLong!";
@@ -65,11 +103,16 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure pipeline
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Loan Eligibility API Gateway v1");
+    c.RoutePrefix = "swagger";
+    c.DisplayRequestDuration();
+    c.EnableDeepLinking();
+    c.EnableFilter();
+    c.EnableValidator();
+});
 
 app.UseCors("AllowAll");
 app.UseAuthentication();

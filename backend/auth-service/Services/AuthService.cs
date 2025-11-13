@@ -79,9 +79,9 @@ public class AuthService
 
         return new AuthResponse
         {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            ExpiresAt = expiresAt,
+            // AccessToken = accessToken,
+            // RefreshToken = refreshToken,
+            // ExpiresAt = expiresAt,
             User = MapToDto(user)
         };
     }
@@ -94,6 +94,11 @@ public class AuthService
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
             throw new UnauthorizedAccessException("Invalid username or password");
+        }
+
+        if (!user.EmailVerified)
+        {
+            throw new UnauthorizedAccessException("Email not verified. Please check your email for the verification link.");
         }
 
         // Update last login
@@ -320,6 +325,73 @@ public class AuthService
             verificationUrl);
 
         _logger.LogInformation("Verification email resent for user {UserId} ({Email})", user.Id, user.Email);
+
+        return true;
+    }
+
+    public async Task<bool> RequestPasswordResetAsync(string email)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
+
+        if (user == null)
+        {
+            // Don't reveal if email exists - always return success to prevent email enumeration
+            return true;
+        }
+
+        // Generate password reset token
+        var resetToken = GenerateVerificationToken();
+        var tokenExpiresAt = DateTime.UtcNow.AddHours(1); // Token valid for 1 hour
+
+        user.PasswordResetToken = resetToken;
+        user.PasswordResetTokenExpiresAt = tokenExpiresAt;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        // Send password reset email
+        var resetUrl = _configuration["Email:PasswordResetUrl"] 
+            ?? _configuration["App:BaseUrl"] + "/reset-password";
+        
+        await _emailApiClient.SendPasswordResetEmailAsync(
+            user.Email, 
+            user.Username, 
+            resetToken, 
+            resetUrl);
+
+        _logger.LogInformation("Password reset email sent for user {UserId} ({Email})", user.Id, user.Email);
+
+        return true;
+    }
+
+    public async Task<bool> ResetPasswordAsync(string token, string newPassword)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.PasswordResetToken == token && u.IsActive);
+
+        if (user == null)
+        {
+            return false;
+        }
+
+        // Check if token is expired
+        if (user.PasswordResetTokenExpiresAt.HasValue && 
+            user.PasswordResetTokenExpiresAt.Value < DateTime.UtcNow)
+        {
+            return false;
+        }
+
+        // Reset password
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        user.PasswordHash = passwordHash;
+        user.PasswordResetToken = null;
+        user.PasswordResetTokenExpiresAt = null;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Password reset successful for user {UserId} ({Email})", user.Id, user.Email);
 
         return true;
     }

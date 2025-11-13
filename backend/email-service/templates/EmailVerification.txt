@@ -1,0 +1,9 @@
+Welcome, {username}!
+
+Thank you for registering with Loan Eligibility System. Please verify your email address by visiting the following link:
+
+{fullUrl}
+
+This verification link will expire in 7 days.
+
+If you did not create an account, please ignore this email.

@@ -21,10 +21,11 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { loginFormSchema } from "./formSchema";
-import { useAuth } from "@/context/AuthContext";
-import { useState } from "react";
+import { useAuthStore } from "@/stores";
+import { useState, useEffect } from "react";
 import { Spinner } from "@/components/ui/spinner"
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 
 export default function LoginForm({
@@ -39,27 +40,40 @@ export default function LoginForm({
     },
   });
 
-  const { login, loading } = useAuth();
+  const { login, loading, user, resendVerificationEmail, isAuthenticated } = useAuthStore();
   const [errorMessage, setErrorMessage] = useState<string>();
+  const [showUnverifiedMessage, setShowUnverifiedMessage] = useState(false);
   const t = useTranslations("loginPage");
-
 
   const onSubmit = async (data: z.infer<typeof loginFormSchema>, e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setShowUnverifiedMessage(false);
     if (data.email && data.password) {
       try {
         await login(data.email, data.password);
+        // Check if user email is verified after login - this will be checked via useEffect after user state updates
       } catch (error) {
         form.setError("email", { message: "" });
         form.setError("password", { message: "" });
         const errorMess = error instanceof Error ? error.message : 'Login failed. Please check your credentials.';
         setErrorMessage(errorMess);
-        toast.error(errorMess)
+        toast.error(errorMess);
+        // Check if error is about unverified email
+        if (errorMess.toLowerCase().includes('email') && errorMess.toLowerCase().includes('verify')) {
+          setShowUnverifiedMessage(true);
+        }
       } finally {
         setErrorMessage("");
       }
     }
   }
+
+  // Check if user email is verified after successful login
+  useEffect(() => {
+    if (user && !user.emailVerified && isAuthenticated) {
+      setShowUnverifiedMessage(true);
+    }
+  }, [user]);
 
   return (
     <div className="w-full max-w-sm">
@@ -114,7 +128,32 @@ export default function LoginForm({
                   </Field>
                 )} />
                 {errorMessage && <FieldError>{errorMessage}</FieldError>}
+                {showUnverifiedMessage && (
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <p className="text-sm text-yellow-800 mb-2">
+                      Your email address has not been verified. Please check your email for the verification link.
+                    </p>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await resendVerificationEmail(form.getValues("email"));
+                          toast.success("Verification email resent!");
+                        } catch (error) {
+                          toast.error("Failed to resend verification email");
+                        }
+                      }}
+                      className="text-sm text-yellow-800 hover:text-yellow-900 font-bold underline"
+                    >
+                      Resend verification email
+                    </button>
+                  </div>
+                )}
                 <Field>
+                  <div className="text-right text-sm mb-2">
+                    <Link href="/forgot-password" className="text-primary hover:text-primary/80 font-bold">
+                      Forgot password?
+                    </Link>
+                  </div>
                   {loading ? <Button type="submit" form="login-form" className="font-bold" disabled>
                     <Spinner />
                     Submitting...</Button> : <Button type="submit" form="login-form" className="font-bold">{t("buttonText")}</Button>}

@@ -12,12 +12,12 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { financialDetailsFormSchema } from "./formSchema";
 import { useRouter } from "next/navigation";
-import { useEligibility } from "@/context/EligibilityContext";
+import { useEligibilityStore } from "@/stores";
 import { FinancialDetails } from "@/models/FinancialDetails";
 import showToast from "@/lib/showToast";
 
 export default function FinancialDetailsForm() {
-  const {financialDetails,setFinancialDetails} = useEligibility();
+  const {financialDetails,setFinancialDetails} = useEligibilityStore();
   const form = useForm<z.infer<typeof financialDetailsFormSchema>>({
     resolver: zodResolver(financialDetailsFormSchema),
     defaultValues: {
