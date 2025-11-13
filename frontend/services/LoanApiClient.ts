@@ -8,14 +8,25 @@ import {
   } from '@/models/index';
   import { AuthApiClient } from '@/services/AuthApiClient';
   
+  import { getApiUrl } from "@/lib/env";
+  
   /**
    * Model Layer - API Client
    * Handles all API interactions with the backend
    * Includes automatic token refresh on 401 errors
    */
   export class LoanApiClient {
-    private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/loans'; // API Gateway
+    private baseUrl: string;
     private authClient = new AuthApiClient();
+    
+    constructor() {
+      try {
+        this.baseUrl = getApiUrl();
+      } catch {
+        // Fallback for development if env var not set
+        this.baseUrl = 'http://localhost:5000/api/loans';
+      }
+    }
     
     private async getAuthHeaders(): Promise<HeadersInit> {
       const token = this.authClient.getAccessToken();
