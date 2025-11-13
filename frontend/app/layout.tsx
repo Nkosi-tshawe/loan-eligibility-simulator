@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import { Toaster } from "sonner";
-import { AuthProvider } from "@/context/AuthContext";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 
@@ -56,11 +55,9 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-svh`}
       >
-        <AuthProvider>
-          <RootLayoutContent>
-            {children}
-          </RootLayoutContent>
-        </AuthProvider>
+        <RootLayoutContent>
+          {children}
+        </RootLayoutContent>
       </body>
     </html>
   );

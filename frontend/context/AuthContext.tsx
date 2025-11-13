@@ -10,7 +10,14 @@ interface AuthContextType {
   register: (username: string, email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
   logout: () => void;
   refreshToken: () => Promise<void>;
+  verifyEmail: (token: string) => Promise<void>;
+  resendVerificationEmail: (email: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string, confirmPassword: string) => Promise<void>;
   loading: boolean;
+  isEmailVerified: boolean;
+  registrationSuccess: boolean;
+  registeredEmail: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,7 +36,10 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [user, setUser] = useState<AuthResponse['user'] | null>(null);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const authClient = new AuthApiClient();
 
@@ -167,7 +177,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         firstName,
         lastName,
       });
-      setIsAuthenticated(true);
+      setIsAuthenticated(false);
+      setRegistrationSuccess(true);
+     setIsEmailVerified(false);
       setUser(response.user);
     } catch (error) {
       if (error instanceof Error) {
@@ -190,6 +202,69 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await handleTokenRefresh();
   };
 
+  const verifyEmail = async (token: string) => {
+    setLoading(true);
+    try {
+      await authClient.verifyEmail({ token });
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message || 'Email verification failed');
+      } else {
+        throw new Error('Email verification failed');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resendVerificationEmail = async (email: string) => {
+    setLoading(true);
+    try {
+      await authClient.resendVerificationEmail({ email });
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message || 'Failed to resend verification email');
+      } else {
+        throw new Error('Failed to resend verification email');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const forgotPassword = async (email: string) => {
+    setLoading(true);
+    try {
+      await authClient.forgotPassword({ email });
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message || 'Failed to send password reset email');
+      } else {
+        throw new Error('Failed to send password reset email');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPassword = async (token: string, newPassword: string, confirmPassword: string) => {
+    if (newPassword !== confirmPassword) {
+      throw new Error('Passwords do not match');
+    }
+    setLoading(true);
+    try {
+      await authClient.resetPassword({ token, newPassword, confirmPassword });
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message || 'Failed to reset password');
+      } else {
+        throw new Error('Failed to reset password');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -199,11 +274,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         register,
         logout,
         refreshToken,
+        verifyEmail,
+        resendVerificationEmail,
+        forgotPassword,
+        resetPassword,
         loading,
+        isEmailVerified,
+        registrationSuccess,
+        registeredEmail,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
+
 

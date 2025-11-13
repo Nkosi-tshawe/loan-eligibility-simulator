@@ -15,5 +15,7 @@ RUN dotnet publish "EmailService.API.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY --from=build /src/templates ./templates
+COPY --from=build /src/images ./images
 ENTRYPOINT ["dotnet", "EmailService.API.dll"]
 

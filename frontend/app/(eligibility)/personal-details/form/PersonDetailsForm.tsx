@@ -19,12 +19,12 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { personalDetailsFormSchema } from "./formSchema";
 import { useRouter } from 'next/navigation';
-import { useEligibility } from "@/context/EligibilityContext";
+import { useEligibilityStore } from "@/stores";
 import { PersonalDetails } from "@/models/PersonalDetails";
 import showToast from "@/lib/showToast";
 
 export default function PersonalDetailsForm() {
-  const {personDetails,setPersonDetails} = useEligibility();
+  const {personDetails,setPersonDetails} = useEligibilityStore();
   const form = useForm<z.infer<typeof personalDetailsFormSchema>>({
     resolver: zodResolver(personalDetailsFormSchema),
     defaultValues: {

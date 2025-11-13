@@ -1,7 +1,7 @@
 "use client";
 import RegisterForm from "@/components/feature/Register/RegisterForm";
 import { Spinner } from "@/components/ui/spinner";
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/stores";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -9,7 +9,7 @@ import { useEffect } from "react";
 export default function RegisterPage() {
 
   const router = useRouter();
-  const {isAuthenticated,loading:authLoading} = useAuth();
+  const {isAuthenticated,loading:authLoading} = useAuthStore();
    
   useEffect(() => {
       if (isAuthenticated && !authLoading) {

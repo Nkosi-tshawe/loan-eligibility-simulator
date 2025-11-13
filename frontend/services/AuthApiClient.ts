@@ -1,5 +1,6 @@
-import { RegisterRequest, LoginRequest } from "@/models/requests";
+import { RegisterRequest, LoginRequest, VerifyEmailRequest, ResendVerificationRequest, ForgotPasswordRequest, ResetPasswordRequest } from "@/models/requests";
 import { AuthResponse } from "@/models/responses/AuthResponse";
+import { VerifyEmailResponse, ResendVerificationResponse, ForgotPasswordResponse, ResetPasswordResponse } from "@/models/responses";
 import { IUser } from "@/models/User";
 
 export class AuthApiClient {
@@ -90,5 +91,75 @@ export class AuthApiClient {
   
     isAuthenticated(): boolean {
       return !!this.getAccessToken();
+    }
+
+    async verifyEmail(request: VerifyEmailRequest): Promise<VerifyEmailResponse> {
+      const response = await fetch(`${this.baseUrl}/auth/verify-email?token=${encodeURIComponent(request.token)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to verify email');
+      }
+
+      return response.json();
+    }
+
+    async resendVerificationEmail(request: ResendVerificationRequest): Promise<ResendVerificationResponse> {
+      const response = await fetch(`${this.baseUrl}/auth/resend-verification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to resend verification email');
+      }
+
+      return response.json();
+    }
+
+    async forgotPassword(request: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
+      const response = await fetch(`${this.baseUrl}/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to send password reset email');
+      }
+
+      return response.json();
+    }
+
+    async resetPassword(request: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+      const response = await fetch(`${this.baseUrl}/auth/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token: request.token,
+          newPassword: request.newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to reset password');
+      }
+
+      return response.json();
     }
   }
