@@ -60,6 +60,7 @@
         "lastName": "Last Name",
         "email": "Email",
         "password": "Password",
+        "confirmPassword": "Confirm Password",
         "buttonText": "Register",
         "loginLink": "Already have an account?"
     },

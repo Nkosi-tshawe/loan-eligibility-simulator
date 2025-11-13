@@ -1,12 +1,12 @@
 "use client";
 import { LockIcon } from "lucide-react";
 import FinancialDetailsForm from "./form/FInancialDetailsForm";
-import { useEligibility } from "@/context/EligibilityContext";
+import { useEligibilityStore } from "@/stores";
 import React from "react";
 import { useTranslations } from "next-intl";
 
 export default function FinancialDetailsPage() {
-    const {setNavigation } = useEligibility();
+    const {setNavigation } = useEligibilityStore();
     const t = useTranslations("eligibility.financialDetails");
 
     React.useEffect(() => {

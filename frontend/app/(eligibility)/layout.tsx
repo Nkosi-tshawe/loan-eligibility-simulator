@@ -2,8 +2,8 @@
 import RadialProgress from "@/components/RadialProgress";
 import { Progress } from "@/components/ui/progress";
 import { Spinner } from "@/components/ui/spinner";
-import { useAuth } from "@/context/AuthContext";
-import { EligibilityProvider, useEligibility } from "@/context/EligibilityContext";
+import { useAuthStore } from "@/stores";
+import { useEligibilityStore } from "@/stores";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
@@ -13,7 +13,7 @@ function EligibilityLayoutContent({
 }: {
   children: React.ReactNode;
 }) {
-  const { navigation } = useEligibility();
+  const { navigation } = useEligibilityStore();
 
   return (
     <div className="w-full xl:flex xl:max-w-[1024px] xl:gap-5 mx-auto bg-white xl:bg-transparent rounded-lg p-6 ">
@@ -49,17 +49,17 @@ export default function EligibilityLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading } = useAuthStore();
   const router = useRouter(); 
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!loading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, authLoading, router]);
+  }, [isAuthenticated, loading, router]);
 
   // Show loading state while checking authentication
-  if (authLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Spinner />
@@ -70,14 +70,12 @@ export default function EligibilityLayout({
 
   // Don't render content if not authenticated (will redirect)
   if (!isAuthenticated) {
-    return null;
+    return <></>;
   }
 
   return (
-    <EligibilityProvider>
-      <EligibilityLayoutContent>
-        {children}
-      </EligibilityLayoutContent>
-    </EligibilityProvider>
+    <EligibilityLayoutContent>
+      {children}
+    </EligibilityLayoutContent>
   );
 }

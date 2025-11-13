@@ -1,12 +1,12 @@
 "use client";
 import RadialProgress from "@/components/RadialProgress";
-import { useEligibility } from "@/context/EligibilityContext";
+import { useEligibilityStore } from "@/stores";
 import { BriefcaseIcon, CheckCircleIcon, ChevronDownIcon, DownloadIcon, UserCheckIcon, WalletIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export default function EligibilityResultsPage() {
     const t = useTranslations("eligibilityResultPage");
-    const { eligibilityResult } = useEligibility();
+    const { eligibilityResult } = useEligibilityStore();
     const isEligible = eligibilityResult.eligibilityResult.eligible;
     const title = isEligible ? t("eligiblility.egigible.title") : t("eligiblility.notEligible.title");
     const description = isEligible ? t("eligiblility.egigible.description") : t("eligiblility.notEligible.description");

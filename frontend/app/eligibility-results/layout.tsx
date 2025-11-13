@@ -1,9 +1,9 @@
 "use client";
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/stores";
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { EligibilityProvider, useEligibility } from "@/context/EligibilityContext";
+import { useEligibilityStore } from "@/stores";
 import { Button } from "@/components/ui/button";
 
 export function EligibilityResultsLayoutContent({
@@ -11,7 +11,7 @@ export function EligibilityResultsLayoutContent({
 }: {
     children: React.ReactNode;
 }) {
-    const { isLoading,eligibilityResult } = useEligibility();
+    const { isLoading,eligibilityResult } = useEligibilityStore();
     const router = useRouter();
 
     if (isLoading) {
@@ -36,7 +36,7 @@ export default function EligibilityResultsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -50,14 +50,12 @@ export default function EligibilityResultsLayout({
   }
 
   if(!isAuthenticated) {
-    return null;
+    return <></>;
   }
 
   return (
-    <EligibilityProvider>
-      <EligibilityResultsLayoutContent>
-        {children}
-      </EligibilityResultsLayoutContent>
-    </EligibilityProvider>
+    <EligibilityResultsLayoutContent>
+      {children}
+    </EligibilityResultsLayoutContent>
   );
 }

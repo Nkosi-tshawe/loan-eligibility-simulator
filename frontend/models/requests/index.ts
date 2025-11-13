@@ -3,3 +3,7 @@ export * from '@/models/requests/LoginRequest';
 export * from '@/models/requests/RefreshTokenRequest';
 export * from '@/models/requests/EligibilityRequest';
 export * from '@/models/requests/CalculateRateRequest';
+export * from '@/models/requests/VerifyEmailRequest';
+export * from '@/models/requests/ResendVerificationRequest';
+export * from '@/models/requests/ForgotPasswordRequest';
+export * from '@/models/requests/ResetPasswordRequest';
