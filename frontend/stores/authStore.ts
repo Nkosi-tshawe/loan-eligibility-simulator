@@ -2,16 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { AuthApiClient } from '@/services/AuthApiClient';
 import { AuthResponse } from '@/models/responses/AuthResponse';
-
-interface JwtPayload {
-  exp: number;
-  userId?: string;
-  unique_name?: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  [key: string]: unknown;
-}
+import { parseJwt, getTokenExpiration, isTokenExpired } from '@/lib/jwt';
 
 interface AuthState {
   // State
@@ -35,24 +26,10 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
 }
 
-const parseJwt = (token: string): JwtPayload | null => {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-      return JSON.parse(jsonPayload);
-    } catch {
-      return null;
-    }
-};
-
-// Store refresh interval reference outside the store
+// Store refresh interval and timeout references outside the store to prevent memory leaks
 let refreshInterval: NodeJS.Timeout | null = null;
+let refreshTimeout: NodeJS.Timeout | null = null;
+let isRefreshing = false; // Prevent concurrent refresh attempts
 
 export const useAuthStore = create<AuthState>()(
   devtools(
@@ -60,59 +37,98 @@ export const useAuthStore = create<AuthState>()(
   const authClient = new AuthApiClient();
 
   const handleTokenRefresh = async () => {
-    const refreshToken = authClient.getRefreshToken();
-    if (!refreshToken) {
-      throw new Error('No refresh token available');
+    // Prevent concurrent refresh attempts
+    if (isRefreshing) {
+      return;
     }
 
-    const response = await authClient.refreshToken(refreshToken);
-    set({
-      isAuthenticated: true,
-      user: response.user,
-      loading: false,
-    });
+    isRefreshing = true;
+    try {
+      const refreshToken = authClient.getRefreshToken();
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      const response = await authClient.refreshToken(refreshToken);
+      set({
+        isAuthenticated: true,
+        user: response.user,
+        loading: false,
+      });
+    } finally {
+      isRefreshing = false;
+    }
   };
 
-  // Set up automatic token refresh
-  const setupAutoRefresh = () => {
+  // Clean up all refresh timers
+  const cleanupRefreshTimers = () => {
     if (refreshInterval) {
       clearInterval(refreshInterval);
       refreshInterval = null;
     }
+    if (refreshTimeout) {
+      clearTimeout(refreshTimeout);
+      refreshTimeout = null;
+    }
+  };
+
+  // Set up automatic token refresh
+  const setupAutoRefresh = () => {
+    cleanupRefreshTimers();
 
     const checkAndRefreshToken = async () => {
       const { isAuthenticated } = get();
-      if (!isAuthenticated) return;
+      if (!isAuthenticated || isRefreshing) {
+        return;
+      }
 
       const token = authClient.getAccessToken();
-      if (token) {
-        const tokenData = parseJwt(token);
-        if (tokenData) {
-          const expirationTime = tokenData.exp * 1000;
-          const refreshTime = expirationTime - Date.now() - 5 * 60 * 1000;
-          
-          if (refreshTime > 0) {
-            setTimeout(async () => {
-              try {
-                await handleTokenRefresh();
-              } catch (error) {
-                console.error('Auto token refresh failed:', error);
-                get().logout();
-              }
-            }, refreshTime);
-          } else {
-            // Token is about to expire, refresh immediately
-            try {
-              await handleTokenRefresh();
-            } catch (error) {
-              console.error('Auto token refresh failed:', error);
-              get().logout();
-            }
+      if (!token) {
+        return;
+      }
+
+      // Check if token is expired
+      if (isTokenExpired(token)) {
+        // Token expired, refresh immediately
+        try {
+          await handleTokenRefresh();
+        } catch {
+          // Refresh failed, logout user
+          get().logout();
+        }
+        return;
+      }
+
+      // Calculate when to refresh (5 minutes before expiration)
+      const expirationTime = getTokenExpiration(token);
+      if (!expirationTime) {
+        return;
+      }
+
+      const refreshTime = expirationTime - Date.now() - 5 * 60 * 1000;
+      
+      if (refreshTime > 0) {
+        // Schedule refresh before expiration
+        refreshTimeout = setTimeout(async () => {
+          try {
+            await handleTokenRefresh();
+          } catch {
+            // Refresh failed, logout user
+            get().logout();
           }
+        }, refreshTime);
+      } else {
+        // Token is about to expire, refresh immediately
+        try {
+          await handleTokenRefresh();
+        } catch {
+          // Refresh failed, logout user
+          get().logout();
         }
       }
     };
 
+    // Check immediately and then every minute
     checkAndRefreshToken();
     refreshInterval = setInterval(checkAndRefreshToken, 60 * 1000);
   };
@@ -127,10 +143,10 @@ export const useAuthStore = create<AuthState>()(
 
   if (typeof window !== 'undefined') {
     const token = authClient.getAccessToken();
-    if (token) {
+    if (token && !isTokenExpired(token)) {
+      // Valid token found, set initial state
       const tokenData = parseJwt(token);
-      if (tokenData && tokenData.exp * 1000 > Date.now()) {
-        // Valid token found, set initial state
+      if (tokenData) {
         initialIsAuthenticated = true;
         initialUser = {
           id: Number(tokenData.userId) || 0,
@@ -141,9 +157,12 @@ export const useAuthStore = create<AuthState>()(
         };
         initialLoading = false;
       } else {
-        // Token expired, will need to refresh
-        initialLoading = true;
+        // Invalid token format
+        initialLoading = false;
       }
+    } else if (token) {
+      // Token expired, will need to refresh
+      initialLoading = true;
     } else {
       // No token, not loading
       initialLoading = false;
@@ -168,9 +187,9 @@ export const useAuthStore = create<AuthState>()(
     set({ loading: true });
     try {
       const token = authClient.getAccessToken();
-      if (token) {
+      if (token && !isTokenExpired(token)) {
         const tokenData = parseJwt(token);
-        if (tokenData && tokenData.exp * 1000 > Date.now()) {
+        if (tokenData) {
           set({
             isAuthenticated: true,
             user: {
@@ -184,22 +203,25 @@ export const useAuthStore = create<AuthState>()(
           });
           setupAutoRefresh();
         } else {
-          // Token expired, try to refresh
-          try {
-            await handleTokenRefresh();
-            setupAutoRefresh();
-          } catch (refreshError) {
-            // Refresh failed, clear auth state
-            console.error('Token refresh failed:', refreshError);
-            authClient.logout();
-            set({ isAuthenticated: false, user: null, loading: false });
-          }
+          // Invalid token format
+          authClient.logout();
+          set({ isAuthenticated: false, user: null, loading: false });
+        }
+      } else if (token) {
+        // Token expired, try to refresh
+        try {
+          await handleTokenRefresh();
+          setupAutoRefresh();
+        } catch {
+          // Refresh failed, clear auth state
+          authClient.logout();
+          set({ isAuthenticated: false, user: null, loading: false });
         }
       } else {
         set({ loading: false });
       }
-    } catch (error) {
-      console.error('Auth initialization error:', error);
+    } catch {
+      // Auth initialization error - clear state
       authClient.logout();
       set({ isAuthenticated: false, user: null, loading: false });
     }
@@ -285,16 +307,14 @@ export const useAuthStore = create<AuthState>()(
     },
 
     logout: () => {
+      cleanupRefreshTimers();
       authClient.logout();
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
-        refreshInterval = null;
-      }
       set({
         isAuthenticated: false,
         user: null,
         registrationSuccess: false,
         registeredEmail: '',
+        loading: false,
       });
     },
 
@@ -355,11 +375,18 @@ export const useAuthStore = create<AuthState>()(
       set({ loading: true });
       try {
         await authClient.resetPassword({ token, newPassword, confirmPassword });
-        if(authClient.isAuthenticated()) {
-          set({ isAuthenticated:false, loading: false });
+        // If user was authenticated, logout after password reset
+        if (authClient.isAuthenticated()) {
+          cleanupRefreshTimers();
           authClient.logout();
+          set({ 
+            isAuthenticated: false, 
+            user: null,
+            loading: false 
+          });
+        } else {
+          set({ loading: false });
         }
-        set({ loading: false });
       } catch (error) {
         set({ loading: false });
         if (error instanceof Error) {
