@@ -19,12 +19,12 @@ interface EligibilityState {
   navigation: NavigationState;
   loaded: boolean;
 
-  // Actions
-  setPersonDetails: (personDetails: PersonalDetails) => Promise<void>;
-  setFinancialDetails: (financialDetails: FinancialDetails) => Promise<void>;
-  setLoanDetails: (loanDetails: LoanDetails) => Promise<void>;
-  setEligibilityResult: (eligibilityResult: EligibilityResponse) => Promise<void>;
-  setNavigation: (navigation: NavigationState) => void;
+    // Actions
+    setPersonDetails: (personDetails: PersonalDetails) => void;
+    setFinancialDetails: (financialDetails: FinancialDetails) => void;
+    setLoanDetails: (loanDetails: LoanDetails) => void;
+    setEligibilityResult: (eligibilityResult: EligibilityResponse) => void;
+    setNavigation: (navigation: NavigationState) => void;
   checkEligibility: (overrideDetails?: {
     personalDetails?: PersonalDetails;
     financialDetails?: FinancialDetails;
@@ -91,19 +91,19 @@ export const useEligibilityStore = create<EligibilityState>()(
     loaded: false,
 
     // Actions
-    setPersonDetails: async (personDetails: PersonalDetails) => {
+    setPersonDetails: (personDetails: PersonalDetails) => {
       set({ personDetails });
     },
 
-    setFinancialDetails: async (financialDetails: FinancialDetails) => {
+    setFinancialDetails: (financialDetails: FinancialDetails) => {
       set({ financialDetails });
     },
 
-    setLoanDetails: async (loanDetails: LoanDetails) => {
+    setLoanDetails: (loanDetails: LoanDetails) => {
       set({ loanDetails });
     },
 
-    setEligibilityResult: async (eligibilityResult: EligibilityResponse) => {
+    setEligibilityResult: (eligibilityResult: EligibilityResponse) => {
       set({ eligibilityResult });
     },
 
@@ -130,7 +130,6 @@ export const useEligibilityStore = create<EligibilityState>()(
           loaded: true,
         });
       } catch (error) {
-        console.error('Error checking eligibility:', error);
         set({ isLoading: false });
         throw error; // Re-throw so caller can handle it
       }

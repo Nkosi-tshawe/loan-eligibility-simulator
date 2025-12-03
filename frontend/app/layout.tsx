@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import { Toaster } from "sonner";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+import { ErrorBoundaryWrapper } from "@/components/ErrorBoundaryWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,15 +33,15 @@ async function RootLayoutContent({
   
   return (
      <NextIntlClientProvider messages={messages} locale={locale}>
-    
-          <div className="min-h-svh w-full flex flex-col">
-            <Header />
-            <div className=" flex-1 flex items-center justify-center p-6 md:p-10 bg-slate-100 font-sans">
-              {children}
+          <ErrorBoundaryWrapper>
+            <div className="min-h-svh w-full flex flex-col">
+              <Header />
+              <div className="flex-1 flex items-center justify-center p-6 md:p-10 bg-slate-100 font-sans">
+                {children}
+              </div>
             </div>
-          </div>
-          <Toaster />
-
+            <Toaster />
+          </ErrorBoundaryWrapper>
      </NextIntlClientProvider>
   );
 }

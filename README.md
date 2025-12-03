@@ -50,27 +50,107 @@ Before you begin, ensure you have the following installed:
 
 ```
 loan-eligibility-simulator/
-├── frontend/                 # Next.js frontend application
-│   ├── app/                  # Next.js app directory
-│   ├── components/           # React components
-│   ├── services/             # API service clients
-│   └── package.json
+├── frontend/                          # Next.js frontend application
+│   ├── app/                           # Next.js app directory (App Router)
+│   │   ├── (auth)/                    # Auth route group
+│   │   │   ├── login/                 # Login page
+│   │   │   ├── register/              # Registration page
+│   │   │   ├── verify-email/          # Email verification page
+│   │   │   ├── forgot-password/        # Password reset request
+│   │   │   └── reset-password/        # Password reset form
+│   │   ├── (eligibility)/             # Eligibility flow route group
+│   │   │   ├── personal-details/      # Personal information form
+│   │   │   ├── financial-details/      # Financial information form
+│   │   │   └── loan-details/          # Loan details form
+│   │   ├── eligibility-results/       # Results display page
+│   │   ├── layout.tsx                 # Root layout
+│   │   └── page.tsx                  # Home page
+│   ├── components/                     # React components
+│   │   ├── feature/                   # Feature-specific components
+│   │   │   ├── Login/                 # Login form components
+│   │   │   ├── Register/              # Registration form components
+│   │   │   ├── ForgotPassword/        # Password reset components
+│   │   │   └── reset-password/        # Password reset form components
+│   │   ├── ui/                        # Reusable UI components (shadcn/ui)
+│   │   ├── ErrorBoundary.tsx         # Error boundary component
+│   │   ├── ErrorBoundaryWrapper.tsx   # Error boundary wrapper
+│   │   ├── Header.tsx                 # Application header
+│   │   └── RadialProgress.tsx         # Progress indicator
+│   ├── stores/                        # Zustand state management stores
+│   │   ├── authStore.ts               # Authentication state
+│   │   ├── eligibilityStore.ts        # Eligibility flow state
+│   │   └── index.ts                   # Store exports
+│   ├── services/                      # API service clients
+│   │   ├── AuthApiClient.ts           # Authentication API client
+│   │   └── LoanApiClient.ts           # Loan eligibility API client
+│   ├── lib/                           # Utility libraries
+│   │   ├── jwt.ts                     # JWT parsing utilities
+│   │   ├── env.ts                     # Environment variable validation
+│   │   ├── utils.ts                    # General utilities
+│   │   └── showToast.ts                # Toast notification helper
+│   ├── models/                         # TypeScript type definitions
+│   │   ├── requests/                  # API request types
+│   │   ├── responses/                 # API response types
+│   │   └── *.ts                       # Domain models
+│   ├── hooks/                         # Custom React hooks
+│   ├── types/                         # TypeScript type definitions
+│   ├── messages/                      # i18n translation files
+│   ├── public/                        # Static assets
+│   ├── package.json
+│   └── tsconfig.json
 │
 ├── backend/
-│   ├── loan-service/         # Loan eligibility API (ASP.NET Core)
-│   │   ├── Controllers/      # API controllers
-│   │   ├── Services/         # Business logic services
-│   │   ├── Data/             # Database context and entities
-│   │   └── Models/           # Data models
-│   │
-│   └── auth-service/         # Authentication API (ASP.NET Core)
-│       ├── Controllers/      # Auth endpoints
-│       ├── Services/          # Auth business logic
-│       └── Data/             # Database context
+│   ├── api-gateway/                   # API Gateway service
+│   │   ├── Program.cs                 # Application entry point
+│   │   └── Dockerfile
+│   ├── loan-service/                  # Loan eligibility API (ASP.NET Core)
+│   │   ├── Controllers/               # API controllers
+│   │   │   ├── LoanController.cs      # Loan eligibility endpoints
+│   │   │   └── HealthController.cs    # Health check endpoint
+│   │   ├── Services/                  # Business logic services
+│   │   │   ├── LoanEligibilityService.cs
+│   │   │   ├── LoanProductService.cs
+│   │   │   ├── RateCalculationService.cs
+│   │   │   └── AffordabilityService.cs
+│   │   ├── Data/                      # Database context and entities
+│   │   │   ├── LoanEligibilityDbContext.cs
+│   │   │   ├── DatabaseSeeder.cs
+│   │   │   └── Entities/              # EF Core entities
+│   │   ├── Models/                    # Data transfer objects
+│   │   ├── Program.cs                 # Application entry point
+│   │   ├── Dockerfile
+│   │   └── README.md
+│   ├── auth-service/                  # Authentication API (ASP.NET Core)
+│   │   ├── Controllers/               # API controllers
+│   │   │   └── AuthController.cs      # Authentication endpoints
+│   │   ├── Services/                  # Business logic services
+│   │   │   ├── AuthService.cs         # Authentication logic
+│   │   │   └── EmailApiClient.cs     # Email service client
+│   │   ├── Data/                      # Database context and entities
+│   │   │   ├── AuthDbContext.cs
+│   │   │   └── Entities/              # User and token entities
+│   │   ├── Models/                    # Data transfer objects
+│   │   ├── Program.cs                 # Application entry point
+│   │   └── Dockerfile
+│   └── email-service/                 # Email service (ASP.NET Core)
+│       ├── Controllers/               # API controllers
+│       │   └── EmailController.cs     # Email sending endpoints
+│       ├── Services/                  # Business logic services
+│       │   ├── EmailService.cs        # Email sending logic
+│       │   └── IEmailService.cs       # Email service interface
+│       ├── templates/                  # Email templates
+│       │   ├── EmailVerification.html
+│       │   ├── PasswordReset.html
+│       │   └── *.txt                  # Plain text versions
+│       ├── Models/                    # Data transfer objects
+│       ├── Program.cs                 # Application entry point
+│       ├── Dockerfile
+│       └── README.md
 │
-├── docker-compose.yml        # Production Docker setup
-├── docker-compose.dev.yml    # Development Docker setup
-└── nginx/                    # Nginx configuration (optional)
+├── nginx/                             # Nginx configuration
+│   └── default.conf
+├── docker-compose.yml                 # Production Docker setup
+└── docker-compose.dev.yml             # Development Docker setup
 ```
 
 ## Local Development Setup
@@ -113,9 +193,36 @@ This will start:
 
 #### Step 3: Access the Application
 
-- **Frontend**: http://localhost:3000
+Once all services are running, you can access:
+
+- **Frontend Application**: http://localhost:3000
+  - Main application interface
+  - Authentication pages (login, register, password reset)
+  - Loan eligibility flow and results
+
+- **API Gateway**: http://localhost:5000 (if configured)
+  - Central entry point for all API requests
+  - Routes requests to appropriate microservices
+
 - **Loan Service API**: http://localhost:5203
-- **Auth Service API**: http://localhost:5002 (if configured)
+  - Loan eligibility endpoints
+  - Product information
+  - Rate calculations
+  - Health check: http://localhost:5203/health
+
+- **Auth Service API**: http://localhost:5002
+  - User authentication endpoints
+  - Registration and login
+  - Email verification
+  - Password reset
+
+- **Email Service API**: http://localhost:5003 (if configured)
+  - Email sending endpoints
+  - Email verification emails
+  - Password reset emails
+
+- **PostgreSQL Database**: localhost:5432
+  - Database access (if needed for debugging)
 
 ### Option 2: Manual Setup
 
