@@ -17,7 +17,7 @@ import showToast from "@/lib/showToast";
 
 export default function FinancialDetailsForm() {
   const selectAllText = (event: React.MouseEvent<HTMLInputElement>) => {
-    event.target.select();
+    (event.target as HTMLInputElement).select();
   };
 
   const { setFinancialDetails } = useEligibilityStore();
