@@ -73,11 +73,10 @@ export default function LoginForm({
     if (user && !user.emailVerified && isAuthenticated) {
       setShowUnverifiedMessage(true);
     }
-  }, [user]);
+  }, [user, isAuthenticated]);
 
   return (
-    <div className="w-full max-w-sm">
-      <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn("w-full max-w-sm", className)} {...props}>
         <Card>
           <CardHeader>
             <CardTitle>{t("title")}</CardTitle>
@@ -138,7 +137,7 @@ export default function LoginForm({
                         try {
                           await resendVerificationEmail(form.getValues("email"));
                           toast.success("Verification email resent!");
-                        } catch (error) {
+                        } catch {
                           toast.error("Failed to resend verification email");
                         }
                       }}
@@ -163,10 +162,9 @@ export default function LoginForm({
                 </Field>
               </FieldGroup>
             </form>
-
           </CardContent>
         </Card>
-      </div>
     </div>
+   
   );
 }
