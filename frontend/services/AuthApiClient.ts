@@ -2,9 +2,14 @@ import { RegisterRequest, LoginRequest, VerifyEmailRequest, ResendVerificationRe
 import { AuthResponse } from "@/models/responses/AuthResponse";
 import { VerifyEmailResponse, ResendVerificationResponse, ForgotPasswordResponse, ResetPasswordResponse } from "@/models/responses";
 import { IUser } from "@/models/User";
+import { getApiUrl } from "@/lib/env";
 
 export class AuthApiClient {
-    private baseUrl = process.env.NEXT_PUBLIC_API_URL ; // API Gateway
+    private baseUrl: string;
+    
+    constructor() {
+      this.baseUrl = getApiUrl();
+    }
   
     async register(request: RegisterRequest): Promise<AuthResponse> {
       const response = await fetch(`${this.baseUrl}/auth/register`, {

@@ -61,8 +61,7 @@ export default function LoanDetailsForm() {
     //await setLoanDetails(loanDetailsData);
     
     // Use loanDetailsData (the new data) instead of loanDetails (old state)
-    showToast({data: loanDetailsData, title: "Loan detailss saved"});
-    console.log('Setting loan details:', loanDetailsData);
+    showToast({data: loanDetailsData, title: "Loan details saved"});
     
      try {
       // Pass the updated loanDetails directly to checkEligibility
@@ -75,8 +74,8 @@ export default function LoanDetailsForm() {
   
       router.push("/eligibility-results");
      } catch (error) {
-      console.error('Error checking eligibility:', error);
-      showToast({data: error, title: "Error checking eligibility"});
+      const errorMessage = error instanceof Error ? error.message : 'Error checking eligibility';
+      showToast({data: errorMessage, title: "Error checking eligibility"});
      }
   }
   }
